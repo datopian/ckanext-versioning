@@ -1,8 +1,8 @@
-.. image:: https://gitlab.com/datopian/ckanext-versions/badges/develop/pipeline.svg
-    :target: https://gitlab.com/datopian/ckanext-versions/commits/develop
+.. image:: https://github.com/datopian/ckanext-versioning/badges/develop/pipeline.svg
+    :target: https://github.com/datopian/ckanext-versioning/commits/develop
 
 =============
-ckanext-versions
+ckanext-versioning
 =============
 This CKAN extension adds an ability to create and manage named dataset
 versions in CKAN.
@@ -17,7 +17,7 @@ dataset versions, and a few new API actions described below.
 ------------
 Requirements
 ------------
-ckanext-versions has been tested to work with CKAN 2.8. It may work with
+ckanext-versioning has been tested to work with CKAN 2.8. It may work with
 other versions as well.
 
 ------------
@@ -28,23 +28,23 @@ Installation
    For example installing any non-Python dependencies or adding any required
    config settings.
 
-To install ckanext-versions:
+To install ckanext-versioning:
 
 1. Activate your CKAN virtual environment, for example::
 
      . /usr/lib/ckan/default/bin/activate
 
-2. Install the ckanext-versions Python package into your virtual environment::
+2. Install the ckanext-versioning Python package into your virtual environment::
 
-     pip install ckanext-versions
+     pip install ckanext-versioning
 
-3. Add ``versions`` to the ``ckan.plugins`` setting in your CKAN
+3. Add ``versioning`` to the ``ckan.plugins`` setting in your CKAN
    config file (by default the config file is located at
    ``/etc/ckan/default/production.ini``).
 
 4. Initialize the database tables required for this extension by running::
 
-     paster --plugin=ckanext-versions versions init-db
+     paster --plugin=ckanext-versioning versioning init-db
 
 4. Restart CKAN. For example if you've deployed CKAN with Apache on Ubuntu::
 
@@ -370,11 +370,11 @@ This extension does not provide any additional configuration settings.
 Development Installation
 ------------------------
 
-To install ckanext-versions for development, activate your CKAN virtualenv and
+To install ckanext-versioning for development, activate your CKAN virtualenv and
 do::
 
-    git clone https://github.com/datopian/ckanext-versions.git
-    cd ckanext-versions
+    git clone https://github.com/datopian/ckanext-versioning.git
+    cd ckanext-versioning
     python setup.py develop
     pip install -r dev-requirements.txt
 
