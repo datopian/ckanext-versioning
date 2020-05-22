@@ -3,7 +3,7 @@ from ckan.lib import helpers as h
 from ckan.plugins import toolkit
 from flask import Blueprint
 
-versions = Blueprint('versions', __name__)
+versioning = Blueprint('versioning', __name__)
 
 
 def changes(id):
@@ -56,4 +56,4 @@ def changes(id):
     )
 
 
-versions.add_url_rule('/dataset/<id>/version/changes', view_func=changes)
+versioning.add_url_rule('/dataset/<id>/version/changes', view_func=changes)

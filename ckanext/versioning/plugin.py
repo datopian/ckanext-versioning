@@ -6,16 +6,16 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES
 
-from ckanext.versions import blueprints
-from ckanext.versions.logic import action, auth, helpers, uploader
-from ckanext.versions.model import tables_exist
+from ckanext.versioning import blueprints
+from ckanext.versioning.logic import action, auth, helpers, uploader
+from ckanext.versioning.model import tables_exist
 
 UPLOAD_TS_FIELD = uploader.UPLOAD_TS_FIELD
 
 log = logging.getLogger(__name__)
 
 
-class VersionsPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
+class VersioningPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IAuthFunctions)
@@ -108,7 +108,7 @@ class VersionsPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     # IBlueprint
 
     def get_blueprint(self):
-        return [blueprints.versions]
+        return [blueprints.versioning]
 
     # IResourceController
 
@@ -123,7 +123,7 @@ class VersionsPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     # IDatasetForm
 
     def update_package_schema(self):
-        schema = super(VersionsPlugin, self).update_package_schema()
+        schema = super(VersioningPlugin, self).update_package_schema()
         schema['resources'].update(
             {UPLOAD_TS_FIELD: [
                 toolkit.get_validator('ignore_missing'),
@@ -133,7 +133,7 @@ class VersionsPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         return schema
 
     def show_package_schema(self):
-        schema = super(VersionsPlugin, self).show_package_schema()
+        schema = super(VersioningPlugin, self).show_package_schema()
         schema['resources'].update(
             {UPLOAD_TS_FIELD: [
                 toolkit.get_converter('convert_from_extras'),

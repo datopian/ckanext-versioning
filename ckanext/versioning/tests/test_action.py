@@ -3,7 +3,7 @@ from ckan.plugins import toolkit
 from ckan.tests import factories, helpers
 from nose.tools import assert_equals, assert_in, assert_raises
 
-from ckanext.versions.tests import FunctionalTestBase
+from ckanext.versioning.tests import FunctionalTestBase
 
 
 class TestVersionsActions(FunctionalTestBase):

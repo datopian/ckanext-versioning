@@ -1,6 +1,6 @@
-# Makefile for ckanext-versions
+# Makefile for ckanext-versioning
 
-PACKAGE_DIR := ckanext/versions
+PACKAGE_DIR := ckanext/versioning
 
 SHELL := bash
 PIP := pip
@@ -31,7 +31,7 @@ coverage: prepare-config test
 	      --with-pylons=$(TEST_INI_PATH) \
           --nologcapture \
 		  --with-coverage \
-          --cover-package=ckanext.versions \
+          --cover-package=ckanext.versioning \
           --cover-inclusive \
           --cover-erase \
           --cover-tests

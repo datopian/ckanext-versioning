@@ -12,7 +12,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='''ckanext-versions''',
+    name='''ckanext-versioning''',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -23,7 +23,7 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/datopian/ckanext-versions',
+    url='https://github.com/datopian/ckanext-versioning',
 
     # Author details
     author='''Shahar Evron''',
@@ -82,10 +82,10 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'ckan.plugins': [
-            'versions = ckanext.versions.plugin:VersionsPlugin'
+            'versioning = ckanext.versioning.plugin:VersioningPlugin'
         ],
         'paste.paster_command': [
-            'versions = ckanext.versions.commands:VersionsCommand'
+            'versioning = ckanext.versioning.commands:VersioningCommand'
         ],
         'babel.extractors': [
             'ckan = ckan.lib.extract:extract_ckan'

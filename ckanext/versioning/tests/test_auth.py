@@ -4,7 +4,7 @@ from ckan.tests import factories, helpers
 from nose.tools import assert_raises
 from parameterized import parameterized
 
-from ckanext.versions.tests import FunctionalTestBase
+from ckanext.versioning.tests import FunctionalTestBase
 
 
 class TestVersionsAuth(FunctionalTestBase):

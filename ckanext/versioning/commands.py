@@ -4,10 +4,10 @@ import sys
 
 from ckan.plugins.toolkit import CkanCommand
 
-from ckanext.versions.model import create_tables, tables_exist
+from ckanext.versioning.model import create_tables, tables_exist
 
 
-class VersionsCommand(CkanCommand):
+class VersioningCommand(CkanCommand):
     """Utilities for the CKAN versions extension
 
     Usage:
@@ -22,7 +22,7 @@ class VersionsCommand(CkanCommand):
 
     def __init__(self, name):
 
-        super(VersionsCommand, self).__init__(name)
+        super(VersioningCommand, self).__init__(name)
 
     def command(self):
         self._load_config()

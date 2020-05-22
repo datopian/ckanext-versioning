@@ -1,8 +1,8 @@
 from ckan.tests import factories
 from nose.tools import assert_equals
 
-from ckanext.versions.logic import helpers
-from ckanext.versions.tests import FunctionalTestBase
+from ckanext.versioning.logic import helpers
+from ckanext.versioning.tests import FunctionalTestBase
 
 
 class TestHelpers(FunctionalTestBase):
