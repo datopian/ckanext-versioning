@@ -33,7 +33,7 @@ class VersioningPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             log.critical(
                 "The versions extension requires a database setup. Please run "
                 "the following to create the database tables: \n"
-                "paster --plugin=ckanext-versions versions init-db"
+                "paster --plugin=ckanext-versioning versions init-db"
             )
         else:
             log.debug("Dataset versions tables verified to exist")

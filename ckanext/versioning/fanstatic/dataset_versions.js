@@ -1,4 +1,4 @@
-/* API for ckanext-versions */
+/* API for ckanext-versioning */
 
 "use strict";
 
