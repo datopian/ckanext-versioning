@@ -386,6 +386,9 @@ Running the Tests
 To run the tests, do::
 
     make test
+    make test TEST_PATH=test_file.py # to run all the tests of a specific file.
+    make test TEST_PATH=test_file.py:Class # to run all the tests of a specific Class.
+    make test TEST_PATH=test_file.py:Class.test_name # to execute a specific test.
 
 To run the tests and produce a coverage report, first make sure you have
 coverage installed in your virtualenv (``pip install coverage``) then run::

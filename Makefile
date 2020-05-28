@@ -12,6 +12,7 @@ PASTER := paster
 
 TEST_INI_PATH := ./test.ini
 CKAN_PATH := ../../src/ckan
+TEST_PATH :=
 
 prepare-config:
 	$(SED) "s@use = config:.*@use = config:$(CKAN_PATH)/test-core.ini@" -i $(TEST_INI_PATH)
@@ -24,7 +25,8 @@ test: prepare-config
 	$(NOSETESTS) --ckan \
 	      --with-pylons=$(TEST_INI_PATH) \
           --nologcapture \
-          --with-doctest
+          --with-doctest \
+		  ckanext/versioning/tests/$(TEST_PATH)
 
 coverage: prepare-config test
 	$(NOSETESTS) --ckan \
