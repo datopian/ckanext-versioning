@@ -8,10 +8,10 @@ from ckanext.versioning.model import create_tables, tables_exist
 
 
 class VersioningCommand(CkanCommand):
-    """Utilities for the CKAN versions extension
+    """Utilities for the CKAN versioning extension
 
     Usage:
-        paster versions init-db
+        paster versioning init-db
             Initialize database tables
 
     """
