@@ -57,8 +57,10 @@ class VersioningPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'dataset_versions_diff': action.dataset_versions_diff,
 
             # Overridden
+            'package_create': action.package_create,
             'package_show': action.package_show_revision,
-            'resource_show': action.resource_show_revision
+            'package_update': action.package_update,
+            'resource_show': action.resource_show_revision,
         }
 
     # IAuthFunctions

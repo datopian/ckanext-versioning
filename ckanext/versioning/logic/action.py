@@ -1,20 +1,60 @@
 # encoding: utf-8
+import datapackage
 import difflib
 import json
 import logging
 import re
 from datetime import datetime
 
+
 from ckan import model as core_model
+from ckan_datapackage_tools import converter
 from ckan.logic.action.get import package_show as core_package_show
 from ckan.logic.action.get import resource_show as core_resource_show
+from ckan.logic.action.create import package_create as core_package_create
+from ckan.logic.action.update import package_update as core_package_update
 from ckan.plugins import toolkit
 from sqlalchemy.exc import IntegrityError
-
 from ckanext.versioning.logic import helpers as h
 from ckanext.versioning.model import DatasetVersion
+from metastore.backend.gh import GitHubStorage
 
 log = logging.getLogger(__name__)
+
+
+def _get_github_backend():
+    token = toolkit.config.get('ckanext.versioning.github_token')
+    backend = GitHubStorage(
+        github_options={"login_or_token": token},
+        default_owner='pdelboca-datopian')
+    return backend
+
+def package_create(context, data_dict):
+    """Overrides core package create.
+
+    After creating the package, it calls metastore-lib to create a new GitHub
+    repository a store the package dict in a datapackage.json file.
+    """
+    pkg_dict = core_package_create(context, data_dict)
+
+    datapackage = converter.dataset_to_datapackage(pkg_dict)
+    backend = _get_github_backend()
+    pkg_info = backend.create(pkg_dict['name'], datapackage)
+    return pkg_dict
+
+
+def package_update(context, data_dict):
+    """Overrides core package update.
+
+    After updating the package it calls metastore-lib to update the
+    datapackage.json file in the GitHub repository.
+    """
+    pkg_dict = core_package_update(context, data_dict)
+
+    datapackage = converter.dataset_to_datapackage(pkg_dict)
+    backend = _get_github_backend()
+    pkg_info = backend.update(pkg_dict['name'], datapackage)
+    return pkg_dict
 
 
 def dataset_version_update(context, data_dict):
@@ -44,6 +84,8 @@ def dataset_version_update(context, data_dict):
     if not version:
         raise toolkit.ObjectNotFound('Version not found')
 
+    current_name = version.name
+
     toolkit.check_access('dataset_version_create', context, data_dict)
     assert context.get('auth_user_obj')  # Should be here after `check_access`
 
@@ -61,6 +103,15 @@ def dataset_version_update(context, data_dict):
         raise toolkit.ValidationError(
             'Version names must be unique per dataset'
         )
+
+    backend = _get_github_backend()
+    dataset = model.Package.get(version.package_id)
+    backend.tag_update(
+            dataset.name,
+            current_name,
+            new_name=name,
+            new_description=data_dict.get('description', None)
+            )
 
     log.info('Version "%s" with id %s edited correctly', name, version_id)
 
@@ -113,6 +164,15 @@ def dataset_version_create(context, data_dict):
         raise toolkit.ValidationError(
             'Version names must be unique per dataset'
         )
+    #TODO: Names like 'Version 1.2' are not allowed as Github tags
+    backend = _get_github_backend()
+    current_revision = backend.revision_list(dataset.name)[0]
+    backend.tag_create(
+            dataset.name,
+            current_revision.revision,
+            name,
+            description=data_dict.get('description', None)
+            )
 
     log.info('Version "%s" created for package %s', name, dataset.id)
 
@@ -220,6 +280,10 @@ def dataset_version_delete(context, data_dict):
 
     model.Session.delete(version)
     model.repo.commit()
+
+    dataset = model.Package.get(version.package_id)
+    backend = _get_github_backend()
+    backend.tag_delete(dataset.name, version.name)
 
     log.info('Version %s of dataset %s was deleted',
              version_id, version.package_id)
