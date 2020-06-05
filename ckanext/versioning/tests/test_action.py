@@ -1,11 +1,14 @@
+import mock
+
 from ckan import model
 from ckan.plugins import toolkit
 from ckan.tests import factories, helpers
 from nose.tools import assert_equals, assert_in, assert_raises
 
-from ckanext.versioning.tests import FunctionalTestBase
+from ckanext.versioning.tests import (FunctionalTestBase, mocked_action,
+                                     mocked_backend)
 
-
+@mock.patch(mocked_action, return_value=mocked_backend)
 class TestVersionsActions(FunctionalTestBase):
     """Test cases for logic actions
     """
@@ -33,10 +36,10 @@ class TestVersionsActions(FunctionalTestBase):
                 {'name': self.org_admin['name'], 'capacity': 'admin'},
             ]
         )
+        with mock.patch(mocked_action, return_value=mocked_backend) as patch:
+            self.dataset = factories.Dataset()
 
-        self.dataset = factories.Dataset()
-
-    def test_create(self):
+    def test_create(self, mocked_backend):
         """Test basic dataset version creation
         """
         context = self._get_context(self.org_admin)
@@ -44,7 +47,7 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 0.1.2",
+            name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         assert_equals(version['package_id'], self.dataset['id'])
@@ -54,7 +57,7 @@ class TestVersionsActions(FunctionalTestBase):
                       "The best dataset ever, it **rules!**")
         assert_equals(version['creator_user_id'], self.org_admin['id'])
 
-    def test_create_name_already_exists(self):
+    def test_create_name_already_exists(self, mocked_backend):
         """Test that creating a version with an existing name for the same
         dataset raises an error
         """
@@ -72,27 +75,27 @@ class TestVersionsActions(FunctionalTestBase):
                       name="HEAD",
                       description="This is also a good version")
 
-    def test_create_dataset_not_found(self):
+    def test_create_dataset_not_found(self, mocked_backend):
         payload = {'dataset': 'abc123',
                    'name': "Version 0.1.2"}
 
         assert_raises(toolkit.ObjectNotFound, helpers.call_action,
                       'dataset_version_create', **payload)
 
-    def test_create_missing_name(self):
+    def test_create_missing_name(self, mocked_backend):
         payload = {'dataset': self.dataset['id'],
                    'description': "The best dataset ever, it **rules!**"}
 
         assert_raises(toolkit.ValidationError, helpers.call_action,
                       'dataset_version_create', **payload)
 
-    def test_list(self):
+    def test_list(self, mocked_backend):
         context = self._get_context(self.org_admin)
         helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 0.1.2",
+            name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         versions = helpers.call_action('dataset_version_list',
@@ -100,30 +103,30 @@ class TestVersionsActions(FunctionalTestBase):
                                        dataset=self.dataset['id'])
         assert_equals(len(versions), 1)
 
-    def test_list_no_versions(self):
+    def test_list_no_versions(self, mocked_backend):
         context = self._get_context(self.org_admin)
         versions = helpers.call_action('dataset_version_list',
                                        context,
                                        dataset=self.dataset['id'])
         assert_equals(len(versions), 0)
 
-    def test_list_missing_dataset_id(self):
+    def test_list_missing_dataset_id(self, mocked_backend):
         payload = {}
         assert_raises(toolkit.ValidationError, helpers.call_action,
                       'dataset_version_list', **payload)
 
-    def test_list_not_found(self):
+    def test_list_not_found(self, mocked_backend):
         payload = {'dataset': 'abc123'}
         assert_raises(toolkit.ObjectNotFound, helpers.call_action,
                       'dataset_version_list', **payload)
 
-    def test_create_two_versions_for_same_revision(self):
+    def test_create_two_versions_for_same_revision(self, mocked_backend):
         context = self._get_context(self.org_admin)
         helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 0.1.2",
+            name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         helpers.call_action(
@@ -138,13 +141,13 @@ class TestVersionsActions(FunctionalTestBase):
                                        dataset=self.dataset['id'])
         assert_equals(len(versions), 2)
 
-    def test_delete(self):
+    def test_delete(self, mocked_backend):
         context = self._get_context(self.org_admin)
         version = helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 0.1.2",
+            name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         helpers.call_action('dataset_version_delete', context,
@@ -155,23 +158,23 @@ class TestVersionsActions(FunctionalTestBase):
                                        dataset=self.dataset['id'])
         assert_equals(len(versions), 0)
 
-    def test_delete_not_found(self):
+    def test_delete_not_found(self, mocked_backend):
         payload = {'id': 'abc123'}
         assert_raises(toolkit.ObjectNotFound, helpers.call_action,
                       'dataset_version_delete', **payload)
 
-    def test_delete_missing_param(self):
+    def test_delete_missing_param(self, mocked_backend):
         payload = {}
         assert_raises(toolkit.ValidationError, helpers.call_action,
                       'dataset_version_delete', **payload)
 
-    def test_show(self):
+    def test_show(self, mocked_backend):
         context = self._get_context(self.org_admin)
         version1 = helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 0.1.2",
+            name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         version2 = helpers.call_action('dataset_version_show', context,
@@ -179,23 +182,23 @@ class TestVersionsActions(FunctionalTestBase):
 
         assert_equals(version2, version1)
 
-    def test_show_not_found(self):
+    def test_show_not_found(self, mocked_backend):
         payload = {'id': 'abc123'}
         assert_raises(toolkit.ObjectNotFound, helpers.call_action,
                       'dataset_version_show', **payload)
 
-    def test_show_missing_param(self):
+    def test_show_missing_param(self, mocked_backend):
         payload = {}
         assert_raises(toolkit.ValidationError, helpers.call_action,
                       'dataset_version_show', **payload)
 
-    def test_update_last_version(self):
+    def test_update_last_version(self, mocked_backend):
         context = self._get_context(self.org_admin)
         version = helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 0.1.2",
+            name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         updated_version = helpers.call_action(
@@ -203,7 +206,7 @@ class TestVersionsActions(FunctionalTestBase):
             context,
             dataset=self.dataset['id'],
             version=version['id'],
-            name="Edited Version 0.1.2",
+            name="0.1.3",
             description="Edited Description"
         )
 
@@ -214,22 +217,22 @@ class TestVersionsActions(FunctionalTestBase):
         assert_equals(updated_version['description'],
                       "Edited Description")
         assert_equals(updated_version['name'],
-                      "Edited Version 0.1.2")
+                      "0.1.3")
 
-    def test_update_old_version(self):
+    def test_update_old_version(self, mocked_backend):
         context = self._get_context(self.org_admin)
         old_version = helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 1",
+            name="1",
             description="This is an old version!")
 
         helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 2",
+            name="2",
             description="This is a recent version!")
 
         updated_version = helpers.call_action(
@@ -237,7 +240,7 @@ class TestVersionsActions(FunctionalTestBase):
             context,
             dataset=self.dataset['id'],
             version=old_version['id'],
-            name="Version 1.1",
+            name="1.1",
             description="This is an edited old version!"
             )
 
@@ -248,9 +251,9 @@ class TestVersionsActions(FunctionalTestBase):
         assert_equals(updated_version['description'],
                       "This is an edited old version!")
         assert_equals(updated_version['name'],
-                      "Version 1.1")
+                      "1.1")
 
-    def test_update_not_existing_version_raises_error(self):
+    def test_update_not_existing_version_raises_error(self, mocked_backend):
         context = self._get_context(self.org_admin)
 
         assert_raises(
@@ -258,17 +261,17 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_update', context,
             dataset=self.dataset['id'],
             version='abc-123',
-            name="Edited Version 0.1.2",
+            name="0.1.2",
             description='Edited Description'
         )
 
-    def test_versions_diff(self):
+    def test_versions_diff(self, mocked_backend):
         context = self._get_context(self.org_admin)
         version_1 = helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name='Version 1',
+            name='1',
             description='Version 1')
 
         helpers.call_action(
@@ -282,7 +285,7 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name='Version 2',
+            name='2',
             description='Version 2'
         )
 
@@ -300,13 +303,13 @@ class TestVersionsActions(FunctionalTestBase):
             diff['diff']
         )
 
-    def test_versions_diff_with_current(self):
+    def test_versions_diff_with_current(self, mocked_backend):
         context = self._get_context(self.org_admin)
         version_1 = helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name='Version 1',
+            name='1',
             description='Version 1')
 
         helpers.call_action(
