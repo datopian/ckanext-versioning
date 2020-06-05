@@ -24,9 +24,11 @@ log = logging.getLogger(__name__)
 
 def _get_github_backend():
     token = toolkit.config.get('ckanext.versioning.github_token')
+    #TODO: Define how to handle default_owner
+    default_owner = toolkit.config.get('ckanext.versioning.default_owner')
     backend = GitHubStorage(
         github_options={"login_or_token": token},
-        default_owner='pdelboca-datopian')
+        default_owner=default_owner)
     return backend
 
 def package_create(context, data_dict):
