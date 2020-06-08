@@ -1,10 +1,12 @@
+import mock
 from ckan import model
 from ckan.plugins import toolkit
 from ckan.tests import factories, helpers
 from nose.tools import assert_raises
 from parameterized import parameterized
 
-from ckanext.versioning.tests import FunctionalTestBase
+from ckanext.versioning.tests import (FunctionalTestBase, mocked_action,
+                                      mocked_backend)
 
 
 class TestVersionsAuth(FunctionalTestBase):
@@ -38,11 +40,11 @@ class TestVersionsAuth(FunctionalTestBase):
                 {'name': self.other_org_admin['name'], 'capacity': 'admin'},
             ]
         )
-
-        self.private_dataset = factories.Dataset(owner_org=self.org['id'],
-                                                 private=True)
-        self.public_dataset = factories.Dataset(owner_org=self.org['id'],
-                                                private=False)
+        with mock.patch(mocked_action, return_value=mocked_backend):
+            self.private_dataset = factories.Dataset(owner_org=self.org['id'],
+                                                     private=True)
+            self.public_dataset = factories.Dataset(owner_org=self.org['id'],
+                                                    private=False)
 
     @parameterized([
         ('org_admin', 'private_dataset'),

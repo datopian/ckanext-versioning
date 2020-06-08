@@ -1,12 +1,12 @@
 import mock
-
 from ckan import model
 from ckan.plugins import toolkit
 from ckan.tests import factories, helpers
 from nose.tools import assert_equals, assert_in, assert_raises
 
 from ckanext.versioning.tests import (FunctionalTestBase, mocked_action,
-                                     mocked_backend)
+                                      mocked_backend)
+
 
 @mock.patch(mocked_action, return_value=mocked_backend)
 class TestVersionsActions(FunctionalTestBase):
@@ -36,7 +36,7 @@ class TestVersionsActions(FunctionalTestBase):
                 {'name': self.org_admin['name'], 'capacity': 'admin'},
             ]
         )
-        with mock.patch(mocked_action, return_value=mocked_backend) as patch:
+        with mock.patch(mocked_action, return_value=mocked_backend):
             self.dataset = factories.Dataset()
 
     def test_create(self, mocked_backend):
@@ -344,6 +344,7 @@ class TestVersionsActions(FunctionalTestBase):
             diff['diff']
         )
 
+
 @mock.patch(mocked_action, return_value=mocked_backend)
 class TestVersionsPromote(FunctionalTestBase):
     """Test cases for promoting a dataset version to latest
@@ -373,10 +374,10 @@ class TestVersionsPromote(FunctionalTestBase):
             ]
         )
 
-        with mock.patch(mocked_action, return_value=mocked_backend) as patch:
+        with mock.patch(mocked_action, return_value=mocked_backend):
             self.dataset = factories.Dataset()
 
-    def test_promote_version_updates_basic_metadata_fields(self, mocked_backend):
+    def test_promote_version_updates_metadata_fields(self, mocked_backend):
         context = self._get_context(self.org_admin)
 
         initial_dataset = factories.Dataset(

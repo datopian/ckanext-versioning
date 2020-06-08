@@ -1,20 +1,19 @@
 # encoding: utf-8
-import datapackage
 import difflib
 import json
 import logging
 import re
 from datetime import datetime
 
-
 from ckan import model as core_model
-from ckan_datapackage_tools import converter
+from ckan.logic.action.create import package_create as core_package_create
 from ckan.logic.action.get import package_show as core_package_show
 from ckan.logic.action.get import resource_show as core_resource_show
-from ckan.logic.action.create import package_create as core_package_create
 from ckan.logic.action.update import package_update as core_package_update
 from ckan.plugins import toolkit
+from ckan_datapackage_tools import converter
 from sqlalchemy.exc import IntegrityError
+
 from ckanext.versioning.logic import helpers as h
 from ckanext.versioning.model import DatasetVersion
 from metastore.backend.gh import GitHubStorage
@@ -24,12 +23,13 @@ log = logging.getLogger(__name__)
 
 def _get_github_backend():
     token = toolkit.config.get('ckanext.versioning.github_token')
-    #TODO: Define how to handle default_owner
+    # TODO: Define how to handle default_owner
     default_owner = toolkit.config.get('ckanext.versioning.default_owner')
     backend = GitHubStorage(
         github_options={"login_or_token": token},
         default_owner=default_owner)
     return backend
+
 
 def package_create(context, data_dict):
     """Overrides core package create.
@@ -42,7 +42,7 @@ def package_create(context, data_dict):
     if data_dict['type'] == 'dataset':
         datapackage = converter.dataset_to_datapackage(pkg_dict)
         backend = _get_github_backend()
-        pkg_info = backend.create(pkg_dict['name'], datapackage)
+        backend.create(pkg_dict['name'], datapackage)
 
     return pkg_dict
 
@@ -58,7 +58,7 @@ def package_update(context, data_dict):
     if data_dict['type'] == 'dataset':
         datapackage = converter.dataset_to_datapackage(pkg_dict)
         backend = _get_github_backend()
-        pkg_info = backend.update(pkg_dict['name'], datapackage)
+        backend.update(pkg_dict['name'], datapackage)
 
     return pkg_dict
 
@@ -170,7 +170,7 @@ def dataset_version_create(context, data_dict):
         raise toolkit.ValidationError(
             'Version names must be unique per dataset'
         )
-    #TODO: Names like 'Version 1.2' are not allowed as Github tags
+    # TODO: Names like 'Version 1.2' are not allowed as Github tags
     backend = _get_github_backend()
     current_revision = backend.revision_list(dataset.name)[0]
     backend.tag_create(
