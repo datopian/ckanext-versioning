@@ -344,7 +344,7 @@ class TestVersionsActions(FunctionalTestBase):
             diff['diff']
         )
 
-
+@mock.patch(mocked_action, return_value=mocked_backend)
 class TestVersionsPromote(FunctionalTestBase):
     """Test cases for promoting a dataset version to latest
     """
@@ -373,9 +373,10 @@ class TestVersionsPromote(FunctionalTestBase):
             ]
         )
 
-        self.dataset = factories.Dataset()
+        with mock.patch(mocked_action, return_value=mocked_backend) as patch:
+            self.dataset = factories.Dataset()
 
-    def test_promote_version_updates_basic_metadata_fields(self):
+    def test_promote_version_updates_basic_metadata_fields(self, mocked_backend):
         context = self._get_context(self.org_admin)
 
         initial_dataset = factories.Dataset(
@@ -390,7 +391,7 @@ class TestVersionsPromote(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=initial_dataset['id'],
-            name="Version 1")
+            name="1.2")
 
         new_org = factories.Organization(
             users=[
@@ -427,7 +428,7 @@ class TestVersionsPromote(FunctionalTestBase):
             promoted_dataset['maintainer_email'], 'test_email@example.com')
         assert_equals(promoted_dataset['owner_org'], self.org['id'])
 
-    def test_promote_version_updates_extras(self):
+    def test_promote_version_updates_extras(self, mocked_backend):
         context = self._get_context(self.org_admin)
 
         initial_dataset = factories.Dataset(
@@ -438,7 +439,7 @@ class TestVersionsPromote(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=initial_dataset['id'],
-            name="Version 1")
+            name="1.2")
 
         helpers.call_action(
             'package_update',
@@ -469,7 +470,7 @@ class TestVersionsPromote(FunctionalTestBase):
             '"original value"')
         assert_equals(len(promoted_dataset['extras']), 1)
 
-    def test_promote_version_updates_resources(self):
+    def test_promote_version_updates_resources(self, mocked_backend):
         context = self._get_context(self.org_admin)
 
         initial_dataset = factories.Dataset()
@@ -484,7 +485,7 @@ class TestVersionsPromote(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=initial_dataset['id'],
-            name="Version 1")
+            name="1.2")
 
         second_resource = factories.Resource(
             name="Second Resource",
