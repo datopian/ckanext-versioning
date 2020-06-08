@@ -39,9 +39,11 @@ def package_create(context, data_dict):
     """
     pkg_dict = core_package_create(context, data_dict)
 
-    datapackage = converter.dataset_to_datapackage(pkg_dict)
-    backend = _get_github_backend()
-    pkg_info = backend.create(pkg_dict['name'], datapackage)
+    if data_dict['type'] == 'dataset':
+        datapackage = converter.dataset_to_datapackage(pkg_dict)
+        backend = _get_github_backend()
+        pkg_info = backend.create(pkg_dict['name'], datapackage)
+
     return pkg_dict
 
 
@@ -53,9 +55,11 @@ def package_update(context, data_dict):
     """
     pkg_dict = core_package_update(context, data_dict)
 
-    datapackage = converter.dataset_to_datapackage(pkg_dict)
-    backend = _get_github_backend()
-    pkg_info = backend.update(pkg_dict['name'], datapackage)
+    if data_dict['type'] == 'dataset':
+        datapackage = converter.dataset_to_datapackage(pkg_dict)
+        backend = _get_github_backend()
+        pkg_info = backend.update(pkg_dict['name'], datapackage)
+
     return pkg_dict
 
 
