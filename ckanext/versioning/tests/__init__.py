@@ -1,10 +1,6 @@
 from ckan.tests import helpers
 
 from ckanext.versioning import model
-from metastore.backend.filesystem import FilesystemStorage
-
-mocked_import = 'ckanext.versioning.logic.action.get_metastore_backend'
-mocked_backend = FilesystemStorage('mem://')
 
 
 class FunctionalTestBase(helpers.FunctionalTestBase):
