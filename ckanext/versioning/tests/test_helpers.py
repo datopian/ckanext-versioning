@@ -3,11 +3,11 @@ from ckan.tests import factories
 from nose.tools import assert_equals
 
 from ckanext.versioning.logic import helpers
-from ckanext.versioning.tests import (FunctionalTestBase, mocked_action,
-                                      mocked_backend)
+from ckanext.versioning.tests import (FunctionalTestBase, mocked_backend,
+                                      mocked_import)
 
 
-@mock.patch(mocked_action, return_value=mocked_backend)
+@mock.patch(mocked_import, return_value=mocked_backend)
 class TestHelpers(FunctionalTestBase):
 
     def setup(self):
@@ -20,7 +20,7 @@ class TestHelpers(FunctionalTestBase):
                 {'name': self.admin_user['name'], 'capacity': 'admin'},
             ]
         )
-        with mock.patch(mocked_action, return_value=mocked_backend):
+        with mock.patch(mocked_import, return_value=mocked_backend):
             self.dataset = factories.Dataset(owner_org=self.org['id'],
                                              private=False)
 
