@@ -22,7 +22,7 @@ test: prepare-config
 	$(ISORT) -rc -df -c $(PACKAGE_DIR)
 	$(FLAKE8) $(PACKAGE_DIR)
 	$(PASTER) --plugin=ckan db init -c $(CKAN_PATH)/test-core.ini
-	$(NOSETESTS) --ckan \
+	$(NOSETESTS) --ckan -s \
 	      --with-pylons=$(TEST_INI_PATH) \
           --nologcapture \
           --with-doctest \
