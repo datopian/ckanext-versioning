@@ -24,11 +24,27 @@ log = logging.getLogger(__name__)
 
 
 def _get_metastore_backend():
+    '''Returns a metastore object.
+
+    The type and the configuration of the metastore object is defined in the
+    configuration file of CKAN.
+    '''
     backend_type = toolkit.config.get('ckanext.versioning.backend_type')
     config = literal_eval(
         toolkit.config.get('ckanext.versioning.backend_config')
         )
     return create_metastore(backend_type, config)
+
+def _create_author_from_context(context):
+    '''Creates an Author object for the current user in the system.
+    '''
+    user_obj = context['auth_user_obj']
+    if user_obj:
+        author = Author(user_obj.name, user_obj.email)
+    else:
+        author = Author(name=context['user'])
+
+    return author
 
 
 def package_create(context, data_dict):
@@ -42,13 +58,7 @@ def package_create(context, data_dict):
     if data_dict['type'] == 'dataset':
         datapackage = converter.dataset_to_datapackage(pkg_dict)
         backend = _get_metastore_backend()
-
-        user_obj = context['auth_user_obj']
-        if user_obj:
-            author = Author(user_obj.name, user_obj.email)
-        else:
-            author = Author(name=context['user'])
-
+        author = _create_author_from_context(context)
         backend.create(pkg_dict['name'], datapackage, author=author)
 
     return pkg_dict
@@ -65,13 +75,7 @@ def package_update(context, data_dict):
     if data_dict['type'] == 'dataset':
         datapackage = converter.dataset_to_datapackage(pkg_dict)
         backend = _get_metastore_backend()
-
-        user_obj = context['auth_user_obj']
-        if user_obj:
-            author = Author(user_obj.name, user_obj.email)
-        else:
-            author = Author(name=context['user'])
-
+        author = _create_author_from_context(context)
         backend.update(pkg_dict['name'], datapackage, author=author)
 
     return pkg_dict
@@ -125,12 +129,14 @@ def dataset_version_update(context, data_dict):
         )
 
     backend = _get_metastore_backend()
+    author = _create_author_from_context(context)
     dataset = model.Package.get(version.package_id)
     backend.tag_update(
             dataset.name,
             current_name,
             new_name=name,
-            new_description=data_dict.get('description', None)
+            new_description=data_dict.get('description', None),
+            author=author
             )
 
     log.info('Version "%s" with id %s edited correctly', name, version_id)
@@ -186,12 +192,14 @@ def dataset_version_create(context, data_dict):
         )
     # TODO: Names like 'Version 1.2' are not allowed as Github tags
     backend = _get_metastore_backend()
+    author = _create_author_from_context(context)
     current_revision = backend.fetch(dataset.name)
     backend.tag_create(
             dataset.name,
             current_revision.revision,
             name,
-            description=data_dict.get('description', None)
+            description=data_dict.get('description', None),
+            author=author
             )
 
     log.info('Version "%s" created for package %s', name, dataset.id)
