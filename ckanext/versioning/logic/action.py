@@ -171,7 +171,7 @@ def dataset_version_create(context, data_dict):
         )
     # TODO: Names like 'Version 1.2' are not allowed as Github tags
     backend = _get_metastore_backend()
-    current_revision = backend.revision_list(dataset.name)[0]
+    current_revision = backend.fetch(dataset.name)
     backend.tag_create(
             dataset.name,
             current_revision.revision,
