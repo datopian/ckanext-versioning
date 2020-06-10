@@ -38,6 +38,7 @@ class TestVersionsAuth(FunctionalTestBase):
                 {'name': self.other_org_admin['name'], 'capacity': 'admin'},
             ]
         )
+
         self.private_dataset = factories.Dataset(owner_org=self.org['id'],
                                                  private=True)
         self.public_dataset = factories.Dataset(owner_org=self.org['id'],

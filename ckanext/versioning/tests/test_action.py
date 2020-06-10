@@ -11,9 +11,11 @@ class TestVersionsActions(FunctionalTestBase):
     """
 
     def _get_context(self, user):
+        userobj = model.User.get(user['name'])
         return {
             'model': model,
             'user': user['name'],
+            "auth_user_obj": userobj,
             'ignore_auth': False
         }
 

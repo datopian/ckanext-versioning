@@ -18,6 +18,7 @@ from sqlalchemy.exc import IntegrityError
 from ckanext.versioning.logic import helpers as h
 from ckanext.versioning.model import DatasetVersion
 from metastore.backend import create_metastore
+from metastore.types import Author
 
 log = logging.getLogger(__name__)
 
@@ -41,7 +42,14 @@ def package_create(context, data_dict):
     if data_dict['type'] == 'dataset':
         datapackage = converter.dataset_to_datapackage(pkg_dict)
         backend = _get_metastore_backend()
-        backend.create(pkg_dict['name'], datapackage)
+
+        user_obj = context['auth_user_obj']
+        if user_obj:
+            author = Author(user_obj.name, user_obj.email)
+        else:
+            author = Author(name=context['user'])
+
+        backend.create(pkg_dict['name'], datapackage, author=author)
 
     return pkg_dict
 
@@ -57,7 +65,14 @@ def package_update(context, data_dict):
     if data_dict['type'] == 'dataset':
         datapackage = converter.dataset_to_datapackage(pkg_dict)
         backend = _get_metastore_backend()
-        backend.update(pkg_dict['name'], datapackage)
+
+        user_obj = context['auth_user_obj']
+        if user_obj:
+            author = Author(user_obj.name, user_obj.email)
+        else:
+            author = Author(name=context['user'])
+
+        backend.update(pkg_dict['name'], datapackage, author=author)
 
     return pkg_dict
 

@@ -17,7 +17,6 @@ class TestHelpers(FunctionalTestBase):
                 {'name': self.admin_user['name'], 'capacity': 'admin'},
             ]
         )
-
         self.dataset = factories.Dataset(owner_org=self.org['id'],
                                          private=False)
 
