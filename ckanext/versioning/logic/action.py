@@ -3,82 +3,20 @@ import difflib
 import json
 import logging
 import re
-from ast import literal_eval
 from datetime import datetime
 
 from ckan import model as core_model
-from ckan.logic.action.create import package_create as core_package_create
 from ckan.logic.action.get import package_show as core_package_show
 from ckan.logic.action.get import resource_show as core_resource_show
-from ckan.logic.action.update import package_update as core_package_update
 from ckan.plugins import toolkit
-from ckan_datapackage_tools import converter
 from sqlalchemy.exc import IntegrityError
 
+from ckanext.versioning.common import (create_author_from_context,
+                                       get_metastore_backend)
 from ckanext.versioning.logic import helpers as h
 from ckanext.versioning.model import DatasetVersion
-from metastore.backend import create_metastore
-from metastore.types import Author
 
 log = logging.getLogger(__name__)
-
-
-def _get_metastore_backend():
-    '''Returns a metastore object.
-
-    The type and the configuration of the metastore object is defined in the
-    configuration file of CKAN.
-    '''
-    backend_type = toolkit.config.get('ckanext.versioning.backend_type')
-    config = literal_eval(
-        toolkit.config.get('ckanext.versioning.backend_config')
-        )
-    return create_metastore(backend_type, config)
-
-def _create_author_from_context(context):
-    '''Creates an Author object for the current user in the system.
-    '''
-    user_obj = context['auth_user_obj']
-    if user_obj:
-        author = Author(user_obj.name, user_obj.email)
-    else:
-        author = Author(name=context['user'])
-
-    return author
-
-
-def package_create(context, data_dict):
-    """Overrides core package create.
-
-    After creating the package, it calls metastore-lib to create a new GitHub
-    repository a store the package dict in a datapackage.json file.
-    """
-    pkg_dict = core_package_create(context, data_dict)
-
-    if data_dict['type'] == 'dataset':
-        datapackage = converter.dataset_to_datapackage(pkg_dict)
-        backend = _get_metastore_backend()
-        author = _create_author_from_context(context)
-        backend.create(pkg_dict['name'], datapackage, author=author)
-
-    return pkg_dict
-
-
-def package_update(context, data_dict):
-    """Overrides core package update.
-
-    After updating the package it calls metastore-lib to update the
-    datapackage.json file in the GitHub repository.
-    """
-    pkg_dict = core_package_update(context, data_dict)
-
-    if data_dict['type'] == 'dataset':
-        datapackage = converter.dataset_to_datapackage(pkg_dict)
-        backend = _get_metastore_backend()
-        author = _create_author_from_context(context)
-        backend.update(pkg_dict['name'], datapackage, author=author)
-
-    return pkg_dict
 
 
 def dataset_version_update(context, data_dict):
@@ -128,8 +66,8 @@ def dataset_version_update(context, data_dict):
             'Version names must be unique per dataset'
         )
 
-    backend = _get_metastore_backend()
-    author = _create_author_from_context(context)
+    backend = get_metastore_backend()
+    author = create_author_from_context(context)
     dataset = model.Package.get(version.package_id)
     backend.tag_update(
             dataset.name,
@@ -191,8 +129,8 @@ def dataset_version_create(context, data_dict):
             'Version names must be unique per dataset'
         )
     # TODO: Names like 'Version 1.2' are not allowed as Github tags
-    backend = _get_metastore_backend()
-    author = _create_author_from_context(context)
+    backend = get_metastore_backend()
+    author = create_author_from_context(context)
     current_revision = backend.fetch(dataset.name)
     backend.tag_create(
             dataset.name,
@@ -310,7 +248,7 @@ def dataset_version_delete(context, data_dict):
     model.repo.commit()
 
     dataset = model.Package.get(version.package_id)
-    backend = _get_metastore_backend()
+    backend = get_metastore_backend()
     backend.tag_delete(dataset.name, version.name)
 
     log.info('Version %s of dataset %s was deleted',

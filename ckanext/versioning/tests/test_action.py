@@ -399,7 +399,7 @@ class TestVersionsPromote(FunctionalTestBase):
         helpers.call_action(
             'package_update',
             context,
-            id=initial_dataset['id'],
+            name=initial_dataset['name'],
             title='New Title',
             notes='New Notes',
             maintainer='new_test_maintainer',
@@ -441,7 +441,7 @@ class TestVersionsPromote(FunctionalTestBase):
 
         helpers.call_action(
             'package_update',
-            id=initial_dataset['id'],
+            name=initial_dataset['name'],
             extras=[
                 {'key': u'new extra', 'value': u'"new value"'},
                 {'key': u'new extra 2', 'value': u'"new value 2"'}

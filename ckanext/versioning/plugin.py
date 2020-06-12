@@ -5,8 +5,11 @@ from datetime import datetime
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES
+from ckan_datapackage_tools import converter
 
 from ckanext.versioning import blueprints
+from ckanext.versioning.common import (create_author_from_context,
+                                       get_metastore_backend)
 from ckanext.versioning.logic import action, auth, helpers, uploader
 from ckanext.versioning.model import tables_exist
 
@@ -15,12 +18,11 @@ UPLOAD_TS_FIELD = uploader.UPLOAD_TS_FIELD
 log = logging.getLogger(__name__)
 
 
-class VersioningPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
+class PackageVersioningPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IAuthFunctions)
     plugins.implements(plugins.IPackageController, inherit=True)
-    plugins.implements(plugins.IResourceController, inherit=True)
     plugins.implements(plugins.IUploader, inherit=True)
     plugins.implements(plugins.IDatasetForm, inherit=True)
     plugins.implements(plugins.ITemplateHelpers)
@@ -57,9 +59,7 @@ class VersioningPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'dataset_versions_diff': action.dataset_versions_diff,
 
             # Overridden
-            'package_create': action.package_create,
             'package_show': action.package_show_revision,
-            'package_update': action.package_update,
             'resource_show': action.resource_show_revision,
         }
 
@@ -107,15 +107,60 @@ class VersioningPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             pkg_dict['metadata_updated'] = None
         return pkg_dict
 
+    def after_create(self, context, pkg_dict):
+        """Creates a datapackage.json using metastore-lib backend.
+
+        After creating the package, it calls metastore-lib to create a new
+        GitHub repository a store the package dict in a datapackage.json file.
+        """
+
+        if pkg_dict['type'] == 'dataset':
+            datapackage = converter.dataset_to_datapackage(pkg_dict)
+            backend = get_metastore_backend()
+            author = create_author_from_context(context)
+            pkg_info = backend.create(
+                pkg_dict['name'],
+                datapackage,
+                author=author
+                )
+
+            log.info(
+                'Package {} created correctly. Revision {} created.'.format(
+                 pkg_info.package_id, pkg_info.revision
+                ))
+
+        return pkg_dict
+
+    def after_update(self, context, pkg_dict):
+        """Updates the datapackage.json using metastore-lib backend.
+
+        After updating the package it calls metastore-lib to update the
+        datapackage.json file in the GitHub repository.
+        """
+        if pkg_dict['type'] == 'dataset':
+            # We need to get a complete dict to also update resources data.
+            pkg_dict = toolkit.get_action('package_show')(
+                            {},
+                            {'id': pkg_dict['id']}
+                        )
+
+            datapackage = converter.dataset_to_datapackage(pkg_dict)
+            backend = get_metastore_backend()
+            author = create_author_from_context(context)
+            pkg_info = backend.update(
+                pkg_dict['name'], datapackage, author=author)
+
+            log.info(
+                'Package {} updated correctly. Revision {} created.'.format(
+                 pkg_info.package_id, pkg_info.revision
+                ))
+
+        return pkg_dict
+
     # IBlueprint
 
     def get_blueprint(self):
         return [blueprints.versioning]
-
-    # IResourceController
-
-    def before_delete(self, context, resource, resources):
-        pass
 
     # IUploader
 
@@ -125,7 +170,7 @@ class VersioningPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     # IDatasetForm
 
     def update_package_schema(self):
-        schema = super(VersioningPlugin, self).update_package_schema()
+        schema = super(PackageVersioningPlugin, self).update_package_schema()
         schema['resources'].update(
             {UPLOAD_TS_FIELD: [
                 toolkit.get_validator('ignore_missing'),
@@ -135,7 +180,7 @@ class VersioningPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         return schema
 
     def show_package_schema(self):
-        schema = super(VersioningPlugin, self).show_package_schema()
+        schema = super(PackageVersioningPlugin, self).show_package_schema()
         schema['resources'].update(
             {UPLOAD_TS_FIELD: [
                 toolkit.get_converter('convert_from_extras'),
@@ -149,6 +194,10 @@ class VersioningPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
     def package_types(self):
         return []
+
+
+class ResourceVersioningPlugin(plugins.SingletonPlugin):
+    plugins.implements(plugins.IResourceController, inherit=True)
 
     # IResourceController
 
