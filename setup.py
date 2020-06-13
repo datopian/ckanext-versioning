@@ -82,7 +82,8 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'ckan.plugins': [
-            'versioning = ckanext.versioning.plugin:VersioningPlugin'
+            'package_versioning = ckanext.versioning.plugin:PackageVersioningPlugin',
+            'resource_versioning = ckanext.versioning.plugin:ResourceVersioningPlugin'
         ],
         'paste.paster_command': [
             'versioning = ckanext.versioning.commands:VersioningCommand'

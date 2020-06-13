@@ -11,9 +11,11 @@ class TestVersionsActions(FunctionalTestBase):
     """
 
     def _get_context(self, user):
+        userobj = model.User.get(user['name'])
         return {
             'model': model,
             'user': user['name'],
+            "auth_user_obj": userobj,
             'ignore_auth': False
         }
 
@@ -44,7 +46,7 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 0.1.2",
+            name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         assert_equals(version['package_id'], self.dataset['id'])
@@ -92,7 +94,7 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 0.1.2",
+            name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         versions = helpers.call_action('dataset_version_list',
@@ -123,7 +125,7 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 0.1.2",
+            name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         helpers.call_action(
@@ -144,7 +146,7 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 0.1.2",
+            name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         helpers.call_action('dataset_version_delete', context,
@@ -171,7 +173,7 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 0.1.2",
+            name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         version2 = helpers.call_action('dataset_version_show', context,
@@ -195,7 +197,7 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 0.1.2",
+            name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         updated_version = helpers.call_action(
@@ -203,7 +205,7 @@ class TestVersionsActions(FunctionalTestBase):
             context,
             dataset=self.dataset['id'],
             version=version['id'],
-            name="Edited Version 0.1.2",
+            name="0.1.3",
             description="Edited Description"
         )
 
@@ -214,7 +216,7 @@ class TestVersionsActions(FunctionalTestBase):
         assert_equals(updated_version['description'],
                       "Edited Description")
         assert_equals(updated_version['name'],
-                      "Edited Version 0.1.2")
+                      "0.1.3")
 
     def test_update_old_version(self):
         context = self._get_context(self.org_admin)
@@ -222,14 +224,14 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 1",
+            name="1",
             description="This is an old version!")
 
         helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name="Version 2",
+            name="2",
             description="This is a recent version!")
 
         updated_version = helpers.call_action(
@@ -237,7 +239,7 @@ class TestVersionsActions(FunctionalTestBase):
             context,
             dataset=self.dataset['id'],
             version=old_version['id'],
-            name="Version 1.1",
+            name="1.1",
             description="This is an edited old version!"
             )
 
@@ -248,7 +250,7 @@ class TestVersionsActions(FunctionalTestBase):
         assert_equals(updated_version['description'],
                       "This is an edited old version!")
         assert_equals(updated_version['name'],
-                      "Version 1.1")
+                      "1.1")
 
     def test_update_not_existing_version_raises_error(self):
         context = self._get_context(self.org_admin)
@@ -258,7 +260,7 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_update', context,
             dataset=self.dataset['id'],
             version='abc-123',
-            name="Edited Version 0.1.2",
+            name="0.1.2",
             description='Edited Description'
         )
 
@@ -268,7 +270,7 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name='Version 1',
+            name='1',
             description='Version 1')
 
         helpers.call_action(
@@ -282,7 +284,7 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name='Version 2',
+            name='2',
             description='Version 2'
         )
 
@@ -306,7 +308,7 @@ class TestVersionsActions(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
-            name='Version 1',
+            name='1',
             description='Version 1')
 
         helpers.call_action(
@@ -372,7 +374,7 @@ class TestVersionsPromote(FunctionalTestBase):
 
         self.dataset = factories.Dataset()
 
-    def test_promote_version_updates_basic_metadata_fields(self):
+    def test_promote_version_updates_metadata_fields(self):
         context = self._get_context(self.org_admin)
 
         initial_dataset = factories.Dataset(
@@ -387,7 +389,7 @@ class TestVersionsPromote(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=initial_dataset['id'],
-            name="Version 1")
+            name="1.2")
 
         new_org = factories.Organization(
             users=[
@@ -397,7 +399,7 @@ class TestVersionsPromote(FunctionalTestBase):
         helpers.call_action(
             'package_update',
             context,
-            id=initial_dataset['id'],
+            name=initial_dataset['name'],
             title='New Title',
             notes='New Notes',
             maintainer='new_test_maintainer',
@@ -435,11 +437,11 @@ class TestVersionsPromote(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=initial_dataset['id'],
-            name="Version 1")
+            name="1.2")
 
         helpers.call_action(
             'package_update',
-            id=initial_dataset['id'],
+            name=initial_dataset['name'],
             extras=[
                 {'key': u'new extra', 'value': u'"new value"'},
                 {'key': u'new extra 2', 'value': u'"new value 2"'}
@@ -481,7 +483,7 @@ class TestVersionsPromote(FunctionalTestBase):
             'dataset_version_create',
             context,
             dataset=initial_dataset['id'],
-            name="Version 1")
+            name="1.2")
 
         second_resource = factories.Resource(
             name="Second Resource",

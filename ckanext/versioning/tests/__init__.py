@@ -5,7 +5,7 @@ from ckanext.versioning import model
 
 class FunctionalTestBase(helpers.FunctionalTestBase):
 
-    _load_plugins = ['versioning']
+    _load_plugins = ['package_versioning', 'resource_versioning']
 
     def setup(self):
         if not model.tables_exist():

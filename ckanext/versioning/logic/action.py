@@ -11,6 +11,8 @@ from ckan.logic.action.get import resource_show as core_resource_show
 from ckan.plugins import toolkit
 from sqlalchemy.exc import IntegrityError
 
+from ckanext.versioning.common import (create_author_from_context,
+                                       get_metastore_backend)
 from ckanext.versioning.logic import helpers as h
 from ckanext.versioning.model import DatasetVersion
 
@@ -44,6 +46,8 @@ def dataset_version_update(context, data_dict):
     if not version:
         raise toolkit.ObjectNotFound('Version not found')
 
+    current_name = version.name
+
     toolkit.check_access('dataset_version_create', context, data_dict)
     assert context.get('auth_user_obj')  # Should be here after `check_access`
 
@@ -61,6 +65,17 @@ def dataset_version_update(context, data_dict):
         raise toolkit.ValidationError(
             'Version names must be unique per dataset'
         )
+
+    backend = get_metastore_backend()
+    author = create_author_from_context(context)
+    dataset = model.Package.get(version.package_id)
+    backend.tag_update(
+            dataset.name,
+            current_name,
+            new_name=name,
+            new_description=data_dict.get('description', None),
+            author=author
+            )
 
     log.info('Version "%s" with id %s edited correctly', name, version_id)
 
@@ -113,6 +128,17 @@ def dataset_version_create(context, data_dict):
         raise toolkit.ValidationError(
             'Version names must be unique per dataset'
         )
+    # TODO: Names like 'Version 1.2' are not allowed as Github tags
+    backend = get_metastore_backend()
+    author = create_author_from_context(context)
+    current_revision = backend.fetch(dataset.name)
+    backend.tag_create(
+            dataset.name,
+            current_revision.revision,
+            name,
+            description=data_dict.get('description', None),
+            author=author
+            )
 
     log.info('Version "%s" created for package %s', name, dataset.id)
 
@@ -220,6 +246,10 @@ def dataset_version_delete(context, data_dict):
 
     model.Session.delete(version)
     model.repo.commit()
+
+    dataset = model.Package.get(version.package_id)
+    backend = get_metastore_backend()
+    backend.tag_delete(dataset.name, version.name)
 
     log.info('Version %s of dataset %s was deleted',
              version_id, version.package_id)
