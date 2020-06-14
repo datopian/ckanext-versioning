@@ -5,10 +5,10 @@ from datetime import datetime
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES
-from ckan_datapackage_tools import converter
 
 from ckanext.versioning import blueprints
 from ckanext.versioning.common import create_author_from_context, get_metastore_backend
+from ckanext.versioning.datapackage import dataset_to_frictionless
 from ckanext.versioning.logic import action, auth, helpers, uploader
 from ckanext.versioning.model import tables_exist
 
@@ -115,7 +115,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
         """
 
         if pkg_dict['type'] == 'dataset':
-            datapackage = converter.dataset_to_datapackage(pkg_dict)
+            datapackage = dataset_to_frictionless(pkg_dict)
             backend = get_metastore_backend()
             author = create_author_from_context(context)
             pkg_info = backend.create(
@@ -144,7 +144,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
                             {'id': pkg_dict['id']}
                         )
 
-            datapackage = converter.dataset_to_datapackage(pkg_dict)
+            datapackage = dataset_to_frictionless(pkg_dict)
             backend = get_metastore_backend()
             author = create_author_from_context(context)
             pkg_info = backend.update(
