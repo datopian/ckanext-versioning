@@ -4,10 +4,10 @@ from ckan.tests import factories, helpers
 from nose.tools import assert_raises
 from parameterized import parameterized
 
-from ckanext.versioning.tests import FunctionalTestBase
+from ckanext.versioning.tests import TestWithMetastoreBackend
 
 
-class TestVersionsAuth(FunctionalTestBase):
+class TestVersionsAuth(TestWithMetastoreBackend):
 
     def _get_context(self, user):
         return {

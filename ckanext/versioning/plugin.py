@@ -8,8 +8,7 @@ from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES
 from ckan_datapackage_tools import converter
 
 from ckanext.versioning import blueprints
-from ckanext.versioning.common import (create_author_from_context,
-                                       get_metastore_backend)
+from ckanext.versioning.common import create_author_from_context, get_metastore_backend
 from ckanext.versioning.logic import action, auth, helpers, uploader
 from ckanext.versioning.model import tables_exist
 
@@ -18,7 +17,8 @@ UPLOAD_TS_FIELD = uploader.UPLOAD_TS_FIELD
 log = logging.getLogger(__name__)
 
 
-class PackageVersioningPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
+class PackageVersioningPlugin(plugins.SingletonPlugin,
+                              toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IAuthFunctions)

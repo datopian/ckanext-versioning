@@ -6,8 +6,7 @@ from collections import OrderedDict
 
 from ckan.model.meta import metadata
 from ckan.model.types import UuidType
-from sqlalchemy import (Column, DateTime, ForeignKey, Unicode,
-                        UniqueConstraint, orm)
+from sqlalchemy import Column, DateTime, ForeignKey, Unicode, UniqueConstraint, orm
 from sqlalchemy.ext.declarative import declarative_base
 
 log = logging.getLogger(__name__)
