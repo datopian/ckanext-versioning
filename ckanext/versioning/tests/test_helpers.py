@@ -2,10 +2,10 @@ from ckan.tests import factories
 from nose.tools import assert_equals
 
 from ckanext.versioning.logic import helpers
-from ckanext.versioning.tests import TestWithMetastoreBackend
+from ckanext.versioning.tests import MetastoreBackendTestBase
 
 
-class TestHelpers(TestWithMetastoreBackend):
+class TestHelpers(MetastoreBackendTestBase):
 
     def setup(self):
         super(TestHelpers, self).setup()

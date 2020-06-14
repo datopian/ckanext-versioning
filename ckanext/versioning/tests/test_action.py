@@ -3,10 +3,11 @@ from ckan.plugins import toolkit
 from ckan.tests import factories, helpers
 from nose.tools import assert_equals, assert_in, assert_raises
 
-from ckanext.versioning.tests import TestWithMetastoreBackend
+from ckanext.versioning.common import get_metastore_backend
+from ckanext.versioning.tests import MetastoreBackendTestBase
 
 
-class TestVersionsActions(TestWithMetastoreBackend):
+class TestVersionsActions(MetastoreBackendTestBase):
     """Test cases for logic actions
     """
 
@@ -36,6 +37,15 @@ class TestVersionsActions(TestWithMetastoreBackend):
         )
 
         self.dataset = factories.Dataset()
+
+    def test_create_stores_a_revision_in_metastore(self):
+        """Test that creating a new dataset creates a revision in metastore
+        """
+        backend = get_metastore_backend()
+        dataset = backend.fetch(self.dataset['name'])
+
+        assert_equals(self.dataset['name'], dataset.package['name'])
+        assert_equals(self.dataset['notes'], dataset.package['description'])
 
     def test_create_tag(self):
         """Test basic dataset version creation
@@ -343,7 +353,7 @@ class TestVersionsActions(TestWithMetastoreBackend):
         )
 
 
-class TestVersionsPromote(TestWithMetastoreBackend):
+class TestVersionsPromote(MetastoreBackendTestBase):
     """Test cases for promoting a dataset version to latest
     """
 

@@ -18,13 +18,13 @@ class FunctionalTestBase(helpers.FunctionalTestBase):
         super(FunctionalTestBase, self).setup()
 
 
-class TestWithMetastoreBackend(FunctionalTestBase):
+class MetastoreBackendTestBase(FunctionalTestBase):
 
     def setup(self):
-        super(TestWithMetastoreBackend, self).setup()
+        super(MetastoreBackendTestBase, self).setup()
         self._backend_dir = tempfile.mkdtemp()
         config['ckanext.versioning.backend_config'] = json.dumps({"uri": self._backend_dir})
 
     def teardown(self):
-        super(TestWithMetastoreBackend, self).setup()
+        super(MetastoreBackendTestBase, self).setup()
         shutil.rmtree(self._backend_dir)
