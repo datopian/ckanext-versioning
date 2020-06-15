@@ -11,8 +11,7 @@ from ckan.logic.action.get import resource_show as core_resource_show
 from ckan.plugins import toolkit
 from sqlalchemy.exc import IntegrityError
 
-from ckanext.versioning.common import (create_author_from_context,
-                                       get_metastore_backend)
+from ckanext.versioning.common import create_author_from_context, get_metastore_backend
 from ckanext.versioning.logic import helpers as h
 from ckanext.versioning.model import DatasetVersion
 

@@ -1,7 +1,6 @@
 from ast import literal_eval
 
 from ckan.plugins import toolkit
-
 from metastore.backend import create_metastore
 from metastore.types import Author
 
@@ -13,9 +12,13 @@ def get_metastore_backend():
     configuration file of CKAN.
     '''
     backend_type = toolkit.config.get('ckanext.versioning.backend_type')
-    config = literal_eval(
-        toolkit.config.get('ckanext.versioning.backend_config')
+    try:
+        config = literal_eval(
+            toolkit.config.get('ckanext.versioning.backend_config')
         )
+    except ValueError:
+        config = {}
+
     return create_metastore(backend_type, config)
 
 

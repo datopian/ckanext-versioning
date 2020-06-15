@@ -3,10 +3,11 @@ from ckan.plugins import toolkit
 from ckan.tests import factories, helpers
 from nose.tools import assert_equals, assert_in, assert_raises
 
-from ckanext.versioning.tests import FunctionalTestBase
+from ckanext.versioning.common import get_metastore_backend
+from ckanext.versioning.tests import MetastoreBackendTestBase
 
 
-class TestVersionsActions(FunctionalTestBase):
+class TestVersionsActions(MetastoreBackendTestBase):
     """Test cases for logic actions
     """
 
@@ -20,7 +21,6 @@ class TestVersionsActions(FunctionalTestBase):
         }
 
     def setup(self):
-
         super(TestVersionsActions, self).setup()
 
         self.org_admin = factories.User()
@@ -38,7 +38,16 @@ class TestVersionsActions(FunctionalTestBase):
 
         self.dataset = factories.Dataset()
 
-    def test_create(self):
+    def test_create_stores_a_revision_in_metastore(self):
+        """Test that creating a new dataset creates a revision in metastore
+        """
+        backend = get_metastore_backend()
+        dataset = backend.fetch(self.dataset['name'])
+
+        assert_equals(self.dataset['name'], dataset.package['name'])
+        assert_equals(self.dataset['notes'], dataset.package['description'])
+
+    def test_create_tag(self):
         """Test basic dataset version creation
         """
         context = self._get_context(self.org_admin)
@@ -56,7 +65,7 @@ class TestVersionsActions(FunctionalTestBase):
                       "The best dataset ever, it **rules!**")
         assert_equals(version['creator_user_id'], self.org_admin['id'])
 
-    def test_create_name_already_exists(self):
+    def test_create_tag_name_already_exists(self):
         """Test that creating a version with an existing name for the same
         dataset raises an error
         """
@@ -344,7 +353,7 @@ class TestVersionsActions(FunctionalTestBase):
         )
 
 
-class TestVersionsPromote(FunctionalTestBase):
+class TestVersionsPromote(MetastoreBackendTestBase):
     """Test cases for promoting a dataset version to latest
     """
 
