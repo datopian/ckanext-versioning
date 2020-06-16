@@ -45,3 +45,8 @@ docs/_build/
 # IDEs
 /.idea/
 .vscode
+
+/.env
+/ckan
+/.make-status
+/.python-version
