@@ -7,6 +7,8 @@ PYTHON := python
 PIP := pip
 PIP_COMPILE := pip-compile
 NOSETESTS := nosetests
+ISORT := isort
+FLAKE8 := flake8
 PASTER := paster
 DOCKER_COMPOSE := docker-compose
 GIT := git
@@ -35,7 +37,7 @@ CKAN_SOLR_PASSWORD := ckan
 DATASTORE_DB_NAME := datastore
 DATASTORE_DB_RO_USER := datastore_ro
 DATASTORE_DB_RO_PASSWORD := datastore_ro
-CKAN_LOAD_PLUGINS := authz_service stats text_view image_view recline_view datastore
+CKAN_LOAD_PLUGINS := stats text_view image_view recline_view datastore
 
 CKAN_CONFIG_VALUES := \
 		ckan.site_url=$(CKAN_SITE_URL) \
