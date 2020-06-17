@@ -21,6 +21,7 @@ CKAN_CLI := $(shell which ckan | head -n1)
 
 TEST_INI_PATH := ./test.ini
 SENTINELS := .make-status
+TEST_PATH :=
 
 PYTHON_VERSION := $(shell $(PYTHON) -c 'import sys; print(sys.version_info[0])')
 
