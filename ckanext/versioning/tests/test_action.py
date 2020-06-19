@@ -1,24 +1,16 @@
-from ckan import model
 from ckan.plugins import toolkit
-from ckan.tests import factories, helpers
+from ckan.tests import factories
+from ckan.tests import helpers as test_helpers
 from nose.tools import assert_equals, assert_in, assert_raises
 
 from ckanext.versioning.common import get_metastore_backend
+from ckanext.versioning.logic import helpers
 from ckanext.versioning.tests import MetastoreBackendTestBase
 
 
 class TestVersionsActions(MetastoreBackendTestBase):
     """Test cases for logic actions
     """
-
-    def _get_context(self, user):
-        userobj = model.User.get(user['name'])
-        return {
-            'model': model,
-            'user': user['name'],
-            "auth_user_obj": userobj,
-            'ignore_auth': False
-        }
 
     def setup(self):
         super(TestVersionsActions, self).setup()
@@ -51,7 +43,7 @@ class TestVersionsActions(MetastoreBackendTestBase):
         """Test basic dataset version creation
         """
         context = self._get_context(self.org_admin)
-        version = helpers.call_action(
+        version = test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
@@ -70,14 +62,14 @@ class TestVersionsActions(MetastoreBackendTestBase):
         dataset raises an error
         """
         context = self._get_context(self.org_admin)
-        helpers.call_action(
+        test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
             name="HEAD",
             description="The best dataset ever, it **rules!**")
 
-        assert_raises(toolkit.ValidationError, helpers.call_action,
+        assert_raises(toolkit.ValidationError, test_helpers.call_action,
                       'dataset_version_create', context,
                       dataset=self.dataset['id'],
                       name="HEAD",
@@ -87,129 +79,129 @@ class TestVersionsActions(MetastoreBackendTestBase):
         payload = {'dataset': 'abc123',
                    'name': "Version 0.1.2"}
 
-        assert_raises(toolkit.ObjectNotFound, helpers.call_action,
+        assert_raises(toolkit.ObjectNotFound, test_helpers.call_action,
                       'dataset_version_create', **payload)
 
     def test_create_missing_name(self):
         payload = {'dataset': self.dataset['id'],
                    'description': "The best dataset ever, it **rules!**"}
 
-        assert_raises(toolkit.ValidationError, helpers.call_action,
+        assert_raises(toolkit.ValidationError, test_helpers.call_action,
                       'dataset_version_create', **payload)
 
     def test_list(self):
         context = self._get_context(self.org_admin)
-        helpers.call_action(
+        test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
-        versions = helpers.call_action('dataset_version_list',
-                                       context,
-                                       dataset=self.dataset['id'])
+        versions = test_helpers.call_action('dataset_version_list',
+                                            context,
+                                            dataset=self.dataset['id'])
         assert_equals(len(versions), 1)
 
     def test_list_no_versions(self):
         context = self._get_context(self.org_admin)
-        versions = helpers.call_action('dataset_version_list',
-                                       context,
-                                       dataset=self.dataset['id'])
+        versions = test_helpers.call_action('dataset_version_list',
+                                            context,
+                                            dataset=self.dataset['id'])
         assert_equals(len(versions), 0)
 
     def test_list_missing_dataset_id(self):
         payload = {}
-        assert_raises(toolkit.ValidationError, helpers.call_action,
+        assert_raises(toolkit.ValidationError, test_helpers.call_action,
                       'dataset_version_list', **payload)
 
     def test_list_not_found(self):
         payload = {'dataset': 'abc123'}
-        assert_raises(toolkit.ObjectNotFound, helpers.call_action,
+        assert_raises(toolkit.ObjectNotFound, test_helpers.call_action,
                       'dataset_version_list', **payload)
 
     def test_create_two_versions_for_same_revision(self):
         context = self._get_context(self.org_admin)
-        helpers.call_action(
+        test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
-        helpers.call_action(
+        test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
             name="latest",
             description="This points to the latest version")
 
-        versions = helpers.call_action('dataset_version_list',
-                                       context,
-                                       dataset=self.dataset['id'])
+        versions = test_helpers.call_action('dataset_version_list',
+                                            context,
+                                            dataset=self.dataset['id'])
         assert_equals(len(versions), 2)
 
     def test_delete(self):
         context = self._get_context(self.org_admin)
-        version = helpers.call_action(
+        version = test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
-        helpers.call_action('dataset_version_delete', context,
-                            id=version['id'])
+        test_helpers.call_action('dataset_version_delete', context,
+                                 id=version['id'])
 
-        versions = helpers.call_action('dataset_version_list',
-                                       context,
-                                       dataset=self.dataset['id'])
+        versions = test_helpers.call_action('dataset_version_list',
+                                            context,
+                                            dataset=self.dataset['id'])
         assert_equals(len(versions), 0)
 
     def test_delete_not_found(self):
         payload = {'id': 'abc123'}
-        assert_raises(toolkit.ObjectNotFound, helpers.call_action,
+        assert_raises(toolkit.ObjectNotFound, test_helpers.call_action,
                       'dataset_version_delete', **payload)
 
     def test_delete_missing_param(self):
         payload = {}
-        assert_raises(toolkit.ValidationError, helpers.call_action,
+        assert_raises(toolkit.ValidationError, test_helpers.call_action,
                       'dataset_version_delete', **payload)
 
     def test_show(self):
         context = self._get_context(self.org_admin)
-        version1 = helpers.call_action(
+        version1 = test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
-        version2 = helpers.call_action('dataset_version_show', context,
-                                       id=version1['id'])
+        version2 = test_helpers.call_action('dataset_version_show', context,
+                                            id=version1['id'])
 
         assert_equals(version2, version1)
 
     def test_show_not_found(self):
         payload = {'id': 'abc123'}
-        assert_raises(toolkit.ObjectNotFound, helpers.call_action,
+        assert_raises(toolkit.ObjectNotFound, test_helpers.call_action,
                       'dataset_version_show', **payload)
 
     def test_show_missing_param(self):
         payload = {}
-        assert_raises(toolkit.ValidationError, helpers.call_action,
+        assert_raises(toolkit.ValidationError, test_helpers.call_action,
                       'dataset_version_show', **payload)
 
     def test_update_last_version(self):
         context = self._get_context(self.org_admin)
-        version = helpers.call_action(
+        version = test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
-        updated_version = helpers.call_action(
+        updated_version = test_helpers.call_action(
             'dataset_version_update',
             context,
             dataset=self.dataset['id'],
@@ -229,21 +221,21 @@ class TestVersionsActions(MetastoreBackendTestBase):
 
     def test_update_old_version(self):
         context = self._get_context(self.org_admin)
-        old_version = helpers.call_action(
+        old_version = test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
             name="1",
             description="This is an old version!")
 
-        helpers.call_action(
+        test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
             name="2",
             description="This is a recent version!")
 
-        updated_version = helpers.call_action(
+        updated_version = test_helpers.call_action(
             'dataset_version_update',
             context,
             dataset=self.dataset['id'],
@@ -265,7 +257,7 @@ class TestVersionsActions(MetastoreBackendTestBase):
         context = self._get_context(self.org_admin)
 
         assert_raises(
-            toolkit.ObjectNotFound, helpers.call_action,
+            toolkit.ObjectNotFound, test_helpers.call_action,
             'dataset_version_update', context,
             dataset=self.dataset['id'],
             version='abc-123',
@@ -275,21 +267,21 @@ class TestVersionsActions(MetastoreBackendTestBase):
 
     def test_versions_diff(self):
         context = self._get_context(self.org_admin)
-        version_1 = helpers.call_action(
+        version_1 = test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
             name='1',
             description='Version 1')
 
-        helpers.call_action(
+        test_helpers.call_action(
             'package_patch',
             context,
             id=self.dataset['id'],
             notes='Some changed notes',
         )
 
-        version_2 = helpers.call_action(
+        version_2 = test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
@@ -297,7 +289,7 @@ class TestVersionsActions(MetastoreBackendTestBase):
             description='Version 2'
         )
 
-        diff = helpers.call_action(
+        diff = test_helpers.call_action(
             'dataset_versions_diff',
             context,
             id=self.dataset['id'],
@@ -313,14 +305,14 @@ class TestVersionsActions(MetastoreBackendTestBase):
 
     def test_versions_diff_with_current(self):
         context = self._get_context(self.org_admin)
-        version_1 = helpers.call_action(
+        version_1 = test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
             name='1',
             description='Version 1')
 
-        helpers.call_action(
+        test_helpers.call_action(
             'package_patch',
             context,
             id=self.dataset['id'],
@@ -328,7 +320,7 @@ class TestVersionsActions(MetastoreBackendTestBase):
             license_id='odc-pddl',
         )
 
-        diff = helpers.call_action(
+        diff = test_helpers.call_action(
             'dataset_versions_diff',
             context,
             id=self.dataset['id'],
@@ -356,13 +348,6 @@ class TestVersionsActions(MetastoreBackendTestBase):
 class TestVersionsPromote(MetastoreBackendTestBase):
     """Test cases for promoting a dataset version to latest
     """
-
-    def _get_context(self, user):
-        return {
-            'model': model,
-            'user': user['name'],
-            'ignore_auth': False
-        }
 
     def setup(self):
 
@@ -394,7 +379,7 @@ class TestVersionsPromote(MetastoreBackendTestBase):
             owner_org=self.org['id']
         )
 
-        version = helpers.call_action(
+        version = test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=initial_dataset['id'],
@@ -405,7 +390,7 @@ class TestVersionsPromote(MetastoreBackendTestBase):
                 {'name': self.org_admin['name'], 'capacity': 'admin'},
             ]
         )
-        helpers.call_action(
+        test_helpers.call_action(
             'package_update',
             context,
             name=initial_dataset['name'],
@@ -416,13 +401,13 @@ class TestVersionsPromote(MetastoreBackendTestBase):
             owner_org=new_org['id']
         )
 
-        helpers.call_action(
+        test_helpers.call_action(
             'dataset_version_promote',
             context,
             version=version['id']
             )
 
-        promoted_dataset = helpers.call_action(
+        promoted_dataset = test_helpers.call_action(
             'package_show',
             context,
             id=initial_dataset['id']
@@ -442,13 +427,13 @@ class TestVersionsPromote(MetastoreBackendTestBase):
             extras=[{'key': u'original extra',
                      'value': u'"original value"'}])
 
-        version = helpers.call_action(
+        version = test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=initial_dataset['id'],
             name="1.2")
 
-        helpers.call_action(
+        test_helpers.call_action(
             'package_update',
             name=initial_dataset['name'],
             extras=[
@@ -457,13 +442,13 @@ class TestVersionsPromote(MetastoreBackendTestBase):
                 ],
         )
 
-        helpers.call_action(
+        test_helpers.call_action(
             'dataset_version_promote',
             context,
             version=version['id']
             )
 
-        promoted_dataset = helpers.call_action(
+        promoted_dataset = test_helpers.call_action(
             'package_show',
             context,
             id=initial_dataset['id']
@@ -488,7 +473,7 @@ class TestVersionsPromote(MetastoreBackendTestBase):
         )
         initial_dataset['resources'].append(first_resource)
 
-        version = helpers.call_action(
+        version = test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=initial_dataset['id'],
@@ -500,13 +485,13 @@ class TestVersionsPromote(MetastoreBackendTestBase):
         )
         initial_dataset['resources'].append(second_resource)
 
-        helpers.call_action(
+        test_helpers.call_action(
             'dataset_version_promote',
             context,
             version=version['id']
             )
 
-        promoted_dataset = helpers.call_action(
+        promoted_dataset = test_helpers.call_action(
             'package_show',
             context,
             id=initial_dataset['id']
@@ -516,3 +501,70 @@ class TestVersionsPromote(MetastoreBackendTestBase):
         assert_equals(
             promoted_dataset['resources'][0]['name'],
             'First Resource')
+
+
+class TestPackageShowRevision(MetastoreBackendTestBase):
+    """Test cases for logic actions
+    """
+
+    def setup(self):
+        super(TestPackageShowRevision, self).setup()
+
+        self.org_admin = factories.User()
+        self.org_admin_name = self.org_admin['name'].encode('ascii')
+
+        self.org_member = factories.User()
+        self.org_member_name = self.org_member['name'].encode('ascii')
+
+        self.org = factories.Organization(
+            users=[
+                {'name': self.org_member['name'], 'capacity': 'member'},
+                {'name': self.org_admin['name'], 'capacity': 'admin'},
+            ]
+        )
+
+        self.dataset = factories.Dataset()
+
+    def test_package_show_revision_gets_current_if_no_revision_id(self):
+        context = self._get_context(self.org_admin)
+
+        test_helpers.call_action(
+            'package_update',
+            context,
+            name=self.dataset['name'],
+            title='New Title',
+            notes='New Notes'
+        )
+
+        current_dataset = test_helpers.call_action(
+            'package_show',
+            context,
+            id=self.dataset['id']
+            )
+
+        assert_equals(current_dataset['title'], 'New Title')
+        # TODO: How do I know that a package is in HEAD? Should we store
+        # revision_id in metastore?
+
+    def test_package_show_revision_gets_revision(self):
+        context = self._get_context(self.org_admin)
+        initial_revision = helpers.get_dataset_current_revision(
+            self.dataset['name']
+            )
+
+        test_helpers.call_action(
+            'package_update',
+            context,
+            name=self.dataset['name'],
+            title='New Title',
+            notes='New Notes'
+        )
+
+        initial_dataset = test_helpers.call_action(
+            'package_show',
+            context,
+            id=self.dataset['id'],
+            revision_id=initial_revision
+            )
+
+        assert_equals(initial_dataset['title'], 'Test Dataset')

@@ -271,14 +271,13 @@ def package_show_revision(context, data_dict):
     :returns: A package dict
     :rtype: dict
     """
-    dd = data_dict.copy()
-    if data_dict.get('revision_id') is None and '@' in data_dict['id']:
-        package_id, revision_id = data_dict['id'].split('@', 1)
-        dd['id'] = package_id
+    revision_id = data_dict.get('revision_id')
+    if revision_id is None:
+        result = core_package_show(context, data_dict)
     else:
-        revision_id = context.get('revision_id')
+        result = _get_package_in_revision(context, data_dict, revision_id)
 
-    return _get_package_in_revision(context, dd, revision_id)
+    return result
 
 
 @toolkit.side_effect_free
@@ -358,20 +357,17 @@ def resource_show_version(context, data_dict):
 def _get_package_in_revision(context, data_dict, revision_id):
     """Internal implementation of package_show_revision
     """
-    current_revision_id = context.get('revision_id', None)
-    if revision_id:
-        context['revision_id'] = revision_id
-
     result = core_package_show(context, data_dict)
     if revision_id:
+        model = context.get('model', core_model)
+        dataset = model.Package.get(data_dict.get('id'))
+        backend = get_metastore_backend()
+        pkg_info = backend.fetch(dataset.name, revision_id)
+        result.update(pkg_info.package)
         for resource in result.get('resources', []):
             resource['datastore_active'] = False
             _fix_resource_data(resource, revision_id)
 
-    if current_revision_id:
-        context['revision_id'] = current_revision_id
-    elif revision_id:
-        del context['revision_id']
     # Fetching the license_url, title from the license registry and validate
     if 'license_id' in result and result['license_id']:
         license_data = h.get_license(result['license_id'])

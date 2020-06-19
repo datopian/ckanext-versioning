@@ -1,4 +1,5 @@
 from ckan.tests import factories
+from ckan.tests import helpers as test_helpers
 from nose.tools import assert_equals
 
 from ckanext.versioning.logic import helpers
@@ -47,3 +48,19 @@ class TestHelpers(MetastoreBackendTestBase):
         assert_equals(
             helpers.has_link_resources(self.dataset),
             False)
+
+    def test_get_dataset_revision_list(self):
+        context = self._get_context(self.admin_user)
+        revision_list = helpers.get_dataset_revision_list(self.dataset['name'])
+        assert_equals(len(revision_list), 1)
+
+        test_helpers.call_action(
+            'package_update',
+            context,
+            name=self.dataset['name'],
+            title='New Title',
+            notes='New Notes'
+        )
+
+        revision_list = helpers.get_dataset_revision_list(self.dataset['name'])
+        assert_equals(len(revision_list), 2)
