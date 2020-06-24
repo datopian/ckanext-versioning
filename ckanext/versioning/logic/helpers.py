@@ -1,6 +1,7 @@
 from ckan import model
 from ckan.plugins import toolkit
 
+from ckanext.versioning.common import get_metastore_backend
 from ckanext.versioning.lib.changes import check_metadata_changes, check_resource_changes
 
 
@@ -100,3 +101,20 @@ def get_license(license_id):
     '''
 
     return model.Package.get_license_register().get(license_id)
+
+
+def get_dataset_revision_list(dataset_name):
+    '''List all revisions in metastore-lib for the given dataset.
+
+    '''
+    backend = get_metastore_backend()
+
+    return [rev.revision for rev in backend.revision_list(dataset_name)]
+
+
+def get_dataset_current_revision(dataset_name):
+    '''Get the current revision in metastore-lib for the given dataset.
+    '''
+    backend = get_metastore_backend()
+
+    return backend.fetch(dataset_name).revision
