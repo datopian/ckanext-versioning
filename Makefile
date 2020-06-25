@@ -37,7 +37,7 @@ CKAN_SOLR_PASSWORD := ckan
 DATASTORE_DB_NAME := datastore
 DATASTORE_DB_RO_USER := datastore_ro
 DATASTORE_DB_RO_PASSWORD := datastore_ro
-CKAN_LOAD_PLUGINS := stats text_view image_view recline_view datastore
+CKAN_LOAD_PLUGINS := stats text_view image_view recline_view datastore package_versioning resource_versioning
 
 CKAN_CONFIG_VALUES := \
 		ckan.site_url=$(CKAN_SITE_URL) \
@@ -213,6 +213,11 @@ $(SENTINELS)/tests-passed: $(SENTINELS)/test-setup $(shell find $(PACKAGE_DIR) -
           --with-doctest \
 		  $(COVERAGE_ARG) $(PACKAGE_DIR)/tests/$(TEST_PATH)
 	@touch $@
+
+## Add test users
+add-users: | _check_virtualenv
+	$(PASTER) --plugin=ckan user add admin password=12345678 email=admin@gatesfoundation.org -c $(CKAN_CONFIG_FILE)
+	$(PASTER) --plugin=ckan sysadmin add admin -c $(CKAN_CONFIG_FILE)
 
 # Help related variables and targets
 

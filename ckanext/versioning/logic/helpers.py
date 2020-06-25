@@ -19,17 +19,14 @@ def url_for_version(package, version=None, **kwargs):
     name; Otherwise, `controller` and `action` are expected as arguments.
     """
     if version:
-        package_id = "@".join([package['id'], version['package_revision_id']])
-        if 'version' not in kwargs:
-            kwargs['version'] = version['id']
-    else:
-        package_id = package.get('name', package['id'])
+        kwargs['revision_id'] = version['package_revision_id']
+    kwargs['package_id'] = package.get('name', package['id'])
 
     if 'route_name' in kwargs:
         route = kwargs.pop('route_name')
-        return toolkit.url_for(route, id=package_id, **kwargs)
+        return toolkit.url_for(route, **kwargs)
     else:
-        return toolkit.url_for(id=package_id, **kwargs)
+        return toolkit.url_for(**kwargs)
 
 
 def url_for_resource_version(package, version, **kwargs):
