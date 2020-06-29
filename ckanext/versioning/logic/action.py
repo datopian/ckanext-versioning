@@ -178,7 +178,7 @@ def dataset_version_promote(context, data_dict):
 
     revision_dict = toolkit.get_action('package_show')(context, {
         'id': version.package_id,
-        'revision_id': version.package_revision_id
+        'revision_ref': version.package_revision_id
     })
 
     promoted_dataset = toolkit.get_action('package_update')(

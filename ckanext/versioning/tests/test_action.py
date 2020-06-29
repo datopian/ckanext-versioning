@@ -30,15 +30,6 @@ class TestVersionsActions(MetastoreBackendTestBase):
 
         self.dataset = factories.Dataset()
 
-    def test_create_stores_a_revision_in_metastore(self):
-        """Test that creating a new dataset creates a revision in metastore
-        """
-        backend = get_metastore_backend()
-        dataset = backend.fetch(self.dataset['name'])
-
-        assert_equals(self.dataset['name'], dataset.package['name'])
-        assert_equals(self.dataset['notes'], dataset.package['description'])
-
     def test_create_tag(self):
         """Test basic dataset version creation
         """
@@ -421,7 +412,7 @@ class TestVersionsPromote(MetastoreBackendTestBase):
         assert_equals(promoted_dataset['maintainer'], 'test_maintainer')
         assert_equals(
             promoted_dataset['maintainer_email'], 'test_email@example.com')
-        assert_equals(promoted_dataset['owner_org'], new_org['id'])
+        assert_equals(promoted_dataset['owner_org'], self.org['id'])
 
     # TODO: Fix this test when the convert logic is ok
     # def test_promote_version_updates_extras(self):
@@ -568,7 +559,7 @@ class TestPackageShowRevision(MetastoreBackendTestBase):
             'package_show',
             context,
             id=self.dataset['id'],
-            revision_id=initial_revision
+            revision_ref=initial_revision
             )
 
         assert_equals(initial_dataset['title'], 'Test Dataset')
