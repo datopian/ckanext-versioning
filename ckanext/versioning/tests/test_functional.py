@@ -24,7 +24,7 @@ class TestPackageShow(MetastoreBackendTestBase):
             'versioning.show',
             package_id=self.dataset['id'])
         environ = {'REMOTE_USER': self.user_name}
-        res = app.get(url, extra_environ=environ)
+        res = app.get(url, extra_environ=environ, status=200)
 
 
     def test_package_show_renders_master_if_not_revision(self):
@@ -38,11 +38,18 @@ class TestPackageShow(MetastoreBackendTestBase):
         assert_in(self.dataset['name'], res.ubody)
 
 
-    def test_package_show_renders_revision(self):
+    def test_package_show_renders_version(self):
         app = self._get_test_app()
         context = self._get_context(self.user)
 
-        rev_id = helpers.get_dataset_current_revision(self.dataset['name'])
+        version = test_helpers.call_action(
+            'dataset_version_create',
+            context,
+            dataset=self.dataset['id'],
+            name="0.1.2",
+            description="The best dataset ever, it **rules!**")
+
+        rev_ref = helpers.get_dataset_current_revision(self.dataset['name'])
         original_notes = self.dataset['notes']
 
         test_helpers.call_action(
@@ -55,9 +62,41 @@ class TestPackageShow(MetastoreBackendTestBase):
         url = toolkit.url_for(
             'versioning.show',
             package_id=self.dataset['id'],
-            revision_id=rev_id)
+            revision_ref=rev_ref)
 
         environ = {'REMOTE_USER': self.user_name}
         res = app.get(url, extra_environ=environ)
 
         assert_in(original_notes, res.ubody)
+
+    def test_package_show_renders_alert_info(self):
+        app = self._get_test_app()
+        context = self._get_context(self.user)
+
+        version = test_helpers.call_action(
+            'dataset_version_create',
+            context,
+            dataset=self.dataset['id'],
+            name="0.1.2",
+            description="The best dataset ever, it **rules!**")
+
+        rev_ref = helpers.get_dataset_current_revision(self.dataset['name'])
+        original_notes = self.dataset['notes']
+
+        test_helpers.call_action(
+            'package_patch',
+            context,
+            id=self.dataset['id'],
+            notes='Some changed notes',
+        )
+
+        url = toolkit.url_for(
+            'versioning.show',
+            package_id=self.dataset['id'],
+            revision_ref=rev_ref)
+
+        environ = {'REMOTE_USER': self.user_name}
+        res = app.get(url, extra_environ=environ)
+
+        assert_in('This is an old version of this dataset', res.ubody)
+        assert_in('module info alert alert-info', res.ubody)
