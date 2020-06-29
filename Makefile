@@ -133,6 +133,11 @@ docker-down: .env
 	$(DOCKER_COMPOSE) down
 .PHONY: docker-down
 
+## Stop all Docker services and remove volumes
+docker-remove: .env
+	$(DOCKER_COMPOSE) down -v
+.PHONY: docker-remove
+
 ## Initialize the development environment
 dev-setup: _check_virtualenv $(SENTINELS)/ckan-installed $(CKAN_PATH)/who.ini $(CKAN_CONFIG_FILE) $(SENTINELS)/develop
 .PHONY: dev-setup
@@ -216,7 +221,7 @@ $(SENTINELS)/tests-passed: $(SENTINELS)/test-setup $(shell find $(PACKAGE_DIR) -
 
 ## Add test users
 add-users: | _check_virtualenv
-	$(PASTER) --plugin=ckan user add admin password=12345678 email=admin@gatesfoundation.org -c $(CKAN_CONFIG_FILE)
+	$(PASTER) --plugin=ckan user add admin password=12345678 email=admin@admin.org -c $(CKAN_CONFIG_FILE)
 	$(PASTER) --plugin=ckan sysadmin add admin -c $(CKAN_CONFIG_FILE)
 
 # Help related variables and targets
