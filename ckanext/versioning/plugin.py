@@ -9,6 +9,7 @@ from ckan_datapackage_tools import converter
 
 from ckanext.versioning import blueprints
 from ckanext.versioning.common import create_author_from_context, get_metastore_backend
+from ckanext.versioning.datapackage import dataset_to_frictionless, frictionless_to_dataset, update_ckan_dict
 from ckanext.versioning.logic import action, auth, helpers, uploader
 from ckanext.versioning.model import tables_exist
 
@@ -96,10 +97,14 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
         toolkit.c.versions = versions
 
-        version_id = toolkit.request.params.get('version', None)
-        if version_id:
-            version = action.dataset_version_show({"ignore_auth": True},
-                                                  {"id": version_id})
+        revision_ref = None
+        try:
+            revision_ref = toolkit.request.view_args['revision_ref']
+        except (AttributeError, KeyError) as e:
+            pass
+
+        if revision_ref:
+            version = helpers.get_dataset_version(pkg_dict['id'], revision_ref)
             toolkit.c.current_version = version
 
             # Hide package creation / update date if viewing a specific version
@@ -115,7 +120,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
         """
 
         if pkg_dict['type'] == 'dataset':
-            datapackage = converter.dataset_to_datapackage(pkg_dict)
+            datapackage = dataset_to_frictionless(pkg_dict)
             backend = get_metastore_backend()
             author = create_author_from_context(context)
             pkg_info = backend.create(
@@ -139,12 +144,13 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
         """
         if pkg_dict['type'] == 'dataset':
             # We need to get a complete dict to also update resources data.
-            pkg_dict = toolkit.get_action('package_show')(
-                            {},
-                            {'id': pkg_dict['id']}
-                        )
+            # We need to save tracking_summary, required for templates.
+            pkg_dict = toolkit.get_action('package_show')({}, {
+                'id': pkg_dict['id'],
+                'include_tracking': True
+                })
 
-            datapackage = converter.dataset_to_datapackage(pkg_dict)
+            datapackage = dataset_to_frictionless(pkg_dict)
             backend = get_metastore_backend()
             author = create_author_from_context(context)
             pkg_info = backend.update(

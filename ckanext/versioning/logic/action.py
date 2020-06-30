@@ -15,6 +15,7 @@ from metastore.backend.exc import Conflict
 from sqlalchemy.exc import IntegrityError
 
 from ckanext.versioning.common import create_author_from_context, get_metastore_backend
+from ckanext.versioning.datapackage import frictionless_to_dataset, update_ckan_dict
 from ckanext.versioning.logic import helpers as h
 from ckanext.versioning.model import DatasetVersion
 
@@ -177,7 +178,7 @@ def dataset_version_promote(context, data_dict):
 
     revision_dict = toolkit.get_action('package_show')(context, {
         'id': version.package_id,
-        'revision_id': version.package_revision_id
+        'revision_ref': version.package_revision_id
     })
 
     promoted_dataset = toolkit.get_action('package_update')(
@@ -271,21 +272,18 @@ def package_show_revision(context, data_dict):
     Takes the same arguments as 'package_show' but with an additional
     revision ID parameter
 
-    Revision ID can also be specified as part of the package ID, as
-    <package_id>@<revision_id>.
-
     :param id: the id of the package
     :type id: string
-    :param revision_id: the ID of the revision
-    :type revision_id: string
+    :param revision_ref: the ID of the revision
+    :type revision_ref: string
     :returns: A package dict
     :rtype: dict
     """
-    revision_id = data_dict.get('revision_id')
-    if revision_id is None:
+    revision_ref = data_dict.get('revision_ref')
+    if revision_ref is None:
         result = core_package_show(context, data_dict)
     else:
-        result = _get_package_in_revision(context, data_dict, revision_id)
+        result = _get_package_in_revision(context, data_dict, revision_ref)
 
     return result
 
@@ -372,8 +370,8 @@ def _get_package_in_revision(context, data_dict, revision_id):
         backend = get_metastore_backend()
         dataset_name = _get_dataset_name(data_dict.get('id'))
         pkg_info = backend.fetch(dataset_name, revision_id)
-        dp = datapackage.DataPackage(pkg_info.package)
-        result.update(converter.datapackage_to_dataset(dp))
+        dataset = frictionless_to_dataset(pkg_info.package)
+        result = update_ckan_dict(result, dataset)
         for resource in result.get('resources', []):
             resource['datastore_active'] = False
             _fix_resource_data(resource, revision_id)

@@ -3,6 +3,7 @@ from ckan.plugins import toolkit
 
 from ckanext.versioning.common import get_metastore_backend
 from ckanext.versioning.lib.changes import check_metadata_changes, check_resource_changes
+from ckanext.versioning.model import DatasetVersion
 
 
 def url_for_version(package, version=None, **kwargs):
@@ -19,17 +20,14 @@ def url_for_version(package, version=None, **kwargs):
     name; Otherwise, `controller` and `action` are expected as arguments.
     """
     if version:
-        package_id = "@".join([package['id'], version['package_revision_id']])
-        if 'version' not in kwargs:
-            kwargs['version'] = version['id']
-    else:
-        package_id = package.get('name', package['id'])
+        kwargs['revision_ref'] = version['package_revision_id']
+    kwargs['package_id'] = package.get('name', package['id'])
 
     if 'route_name' in kwargs:
         route = kwargs.pop('route_name')
-        return toolkit.url_for(route, id=package_id, **kwargs)
+        return toolkit.url_for(route, **kwargs)
     else:
-        return toolkit.url_for(id=package_id, **kwargs)
+        return toolkit.url_for(**kwargs)
 
 
 def url_for_resource_version(package, version, **kwargs):
@@ -118,3 +116,16 @@ def get_dataset_current_revision(dataset_name):
     backend = get_metastore_backend()
 
     return backend.fetch(dataset_name).revision
+
+def get_dataset_version(package_id, revision_ref):
+    '''Get the DatasetVersion for a package and revision_ref.
+    '''
+    version = model.Session.query(DatasetVersion). \
+                filter(DatasetVersion.package_id == package_id). \
+                filter(DatasetVersion.package_revision_id == revision_ref). \
+                one_or_none()
+
+    if not version:
+        raise toolkit.ObjectNotFound('Version not found')
+
+    return version.as_dict()

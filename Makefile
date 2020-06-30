@@ -37,7 +37,7 @@ CKAN_SOLR_PASSWORD := ckan
 DATASTORE_DB_NAME := datastore
 DATASTORE_DB_RO_USER := datastore_ro
 DATASTORE_DB_RO_PASSWORD := datastore_ro
-CKAN_LOAD_PLUGINS := stats text_view image_view recline_view datastore
+CKAN_LOAD_PLUGINS := stats text_view image_view recline_view datastore package_versioning resource_versioning
 
 CKAN_CONFIG_VALUES := \
 		ckan.site_url=$(CKAN_SITE_URL) \
@@ -133,6 +133,11 @@ docker-down: .env
 	$(DOCKER_COMPOSE) down
 .PHONY: docker-down
 
+## Stop all Docker services and remove volumes
+docker-remove: .env
+	$(DOCKER_COMPOSE) down -v
+.PHONY: docker-remove
+
 ## Initialize the development environment
 dev-setup: _check_virtualenv $(SENTINELS)/ckan-installed $(CKAN_PATH)/who.ini $(CKAN_CONFIG_FILE) $(SENTINELS)/develop
 .PHONY: dev-setup
@@ -213,6 +218,11 @@ $(SENTINELS)/tests-passed: $(SENTINELS)/test-setup $(shell find $(PACKAGE_DIR) -
           --with-doctest \
 		  $(COVERAGE_ARG) $(PACKAGE_DIR)/tests/$(TEST_PATH)
 	@touch $@
+
+## Add test users
+add-users: | _check_virtualenv
+	$(PASTER) --plugin=ckan user add admin password=12345678 email=admin@admin.org -c $(CKAN_CONFIG_FILE)
+	$(PASTER) --plugin=ckan sysadmin add admin -c $(CKAN_CONFIG_FILE)
 
 # Help related variables and targets
 
