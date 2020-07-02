@@ -38,7 +38,7 @@ To install ckanext-versioning:
 
      pip install ckanext-versioning
 
-3. Add ``versioning`` to the ``ckan.plugins`` setting in your CKAN
+3. Add ``package_versioning`` and `resource_versioning` to the ``ckan.plugins`` setting in your CKAN
    config file (by default the config file is located at
    ``/etc/ckan/default/production.ini``).
 
