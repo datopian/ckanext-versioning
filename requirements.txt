@@ -2,3 +2,4 @@ ckan-datapackage-tools==0.1.0
 metastore-lib==0.1.1
 python-dateutil==2.8.1
 datapackage
+git+https://github.com/frictionlessdata/frictionless-ckan-mapper.git#egg=frictionless-ckan-mapper
