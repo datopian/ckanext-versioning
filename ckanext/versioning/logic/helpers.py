@@ -3,7 +3,6 @@ from ckan.plugins import toolkit
 
 from ckanext.versioning.common import get_metastore_backend
 from ckanext.versioning.lib.changes import check_metadata_changes, check_resource_changes
-from ckanext.versioning.model import DatasetVersion
 
 
 def url_for_version(package, version=None, **kwargs):

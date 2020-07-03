@@ -42,13 +42,14 @@ class TestVersionsActions(MetastoreBackendTestBase):
             description="The best dataset ever, it **rules!**")
 
         revision = helpers.get_dataset_current_revision(self.dataset['name'])
-
-        assert_equals(version['package_id'], self.dataset['id'])
-        assert_equals(version['package_revision_id'],
+        import ipdb; ipdb.set_trace()
+        assert_equals(version['package_id'], self.dataset['name'])
+        assert_equals(version['revision_ref'],
                       revision)
         assert_equals(version['description'],
                       "The best dataset ever, it **rules!**")
-        assert_equals(version['creator_user_id'], self.org_admin['id'])
+        assert_equals(version['author'], self.org_admin['name'])
+        assert_equals(version['author_email'], self.org_admin['email'])
 
     def test_create_tag_name_already_exists(self):
         """Test that creating a version with an existing name for the same
@@ -144,7 +145,8 @@ class TestVersionsActions(MetastoreBackendTestBase):
             description="The best dataset ever, it **rules!**")
 
         test_helpers.call_action('dataset_version_delete', context,
-                                 id=version['id'])
+                                 dataset=self.dataset['name'],
+                                 tag = version['name'])
 
         versions = test_helpers.call_action('dataset_version_list',
                                             context,
@@ -152,7 +154,7 @@ class TestVersionsActions(MetastoreBackendTestBase):
         assert_equals(len(versions), 0)
 
     def test_delete_not_found(self):
-        payload = {'id': 'abc123'}
+        payload = {'dataset': 'abc123', 'tag': '1.1'}
         assert_raises(toolkit.ObjectNotFound, test_helpers.call_action,
                       'dataset_version_delete', **payload)
 
@@ -171,12 +173,13 @@ class TestVersionsActions(MetastoreBackendTestBase):
             description="The best dataset ever, it **rules!**")
 
         version2 = test_helpers.call_action('dataset_version_show', context,
-                                            id=version1['id'])
+                                            dataset=self.dataset['name'],
+                                            tag=version1['name'])
 
         assert_equals(version2, version1)
 
     def test_show_not_found(self):
-        payload = {'id': 'abc123'}
+        payload = {'dataset': 'abc123', 'tag': '1.1'}
         assert_raises(toolkit.ObjectNotFound, test_helpers.call_action,
                       'dataset_version_show', **payload)
 
@@ -198,15 +201,13 @@ class TestVersionsActions(MetastoreBackendTestBase):
             'dataset_version_update',
             context,
             dataset=self.dataset['id'],
-            version=version['id'],
+            tag=version['name'],
             name="0.1.3",
             description="Edited Description"
         )
 
-        assert_equals(version['id'],
-                      updated_version['id'])
-        assert_equals(version['package_revision_id'],
-                      updated_version['package_revision_id'])
+        assert_equals(version['revision_ref'],
+                      updated_version['revision_ref'])
         assert_equals(updated_version['description'],
                       "Edited Description")
         assert_equals(updated_version['name'],
@@ -232,15 +233,13 @@ class TestVersionsActions(MetastoreBackendTestBase):
             'dataset_version_update',
             context,
             dataset=self.dataset['id'],
-            version=old_version['id'],
+            tag=old_version['name'],
             name="1.1",
             description="This is an edited old version!"
             )
 
-        assert_equals(old_version['id'],
-                      updated_version['id'])
-        assert_equals(old_version['package_revision_id'],
-                      updated_version['package_revision_id'])
+        assert_equals(old_version['revision_ref'],
+                      updated_version['revision_ref'])
         assert_equals(updated_version['description'],
                       "This is an edited old version!")
         assert_equals(updated_version['name'],
@@ -253,7 +252,7 @@ class TestVersionsActions(MetastoreBackendTestBase):
             toolkit.ObjectNotFound, test_helpers.call_action,
             'dataset_version_update', context,
             dataset=self.dataset['id'],
-            version='abc-123',
+            tag='abc-123',
             name="0.1.2",
             description='Edited Description'
         )

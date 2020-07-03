@@ -11,7 +11,6 @@ from ckanext.versioning import blueprints
 from ckanext.versioning.common import create_author_from_context, get_metastore_backend
 from ckanext.versioning.datapackage import dataset_to_frictionless, frictionless_to_dataset, update_ckan_dict
 from ckanext.versioning.logic import action, auth, helpers, uploader
-from ckanext.versioning.model import tables_exist
 
 UPLOAD_TS_FIELD = uploader.UPLOAD_TS_FIELD
 
@@ -32,15 +31,6 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
     # IConfigurer
 
     def update_config(self, config_):
-        if not tables_exist():
-            log.critical(
-                "The versions extension requires a database setup. Please run "
-                "the following to create the database tables: \n"
-                "paster --plugin=ckanext-versioning versions init-db"
-            )
-        else:
-            log.debug("Dataset versions tables verified to exist")
-
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('fanstatic', 'versions')
