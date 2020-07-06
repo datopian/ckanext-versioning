@@ -115,24 +115,18 @@ def dataset_version_promote(context, data_dict):
     param version: the version to be promoted
     type version: string
     """
-    model = context.get('model', core_model)
-    version_id = toolkit.get_or_bust(data_dict, ['version'])
-
-    session = model.Session()
-    version = session.query(DatasetVersion).\
-        filter(DatasetVersion.id == version_id).\
-        one_or_none()
+    version = dataset_version_show(context, data_dict)
 
     if not version:
         raise toolkit.ObjectNotFound('Version not found')
 
-    data_dict['dataset'] = version.package_id
+    data_dict['dataset'] = version['package_id']
     toolkit.check_access('dataset_version_create', context, data_dict)
     assert context.get('auth_user_obj')  # Should be here after `check_access`
 
     revision_dict = toolkit.get_action('package_show')(context, {
-        'id': version.package_id,
-        'revision_ref': version.package_revision_id
+        'id': version['package_id'],
+        'revision_ref': version['revision_ref']
     })
 
     promoted_dataset = toolkit.get_action('package_update')(
@@ -140,7 +134,7 @@ def dataset_version_promote(context, data_dict):
 
     log.info(
         'Version "%s" promoted as latest for package %s',
-        version.name,
+        version['name'],
         promoted_dataset['title'])
 
     return promoted_dataset
@@ -246,11 +240,14 @@ def package_show_version(context, data_dict):
     If version_id is not provided, package data will include a `versions` key
     with a list of versions for this package.
     """
-    version_id = data_dict.get('version_id', None)
-    if version_id:
-        version_dict = dataset_version_show(context, {'id': version_id})
+    tag = data_dict.get('tag', None)
+    dataset_name = data_dict.get('dataset', None)
+    if tag and dataset_name:
+        version_dict = dataset_version_show(
+            context, {'tag': tag, 'dataset': dataset_name}
+            )
         package_dict = _get_package_in_revision(
-            context, data_dict, version_dict['package_revision_id'])
+            context, data_dict, version_dict['revision_ref'])
         package_dict['version_metadata'] = version_dict
     else:
         package_dict = core_package_show(context, data_dict)
@@ -385,20 +382,20 @@ def dataset_versions_diff(context, data_dict):
 
     '''
 
-    dataset_id, version_id_1, version_id_2 = toolkit.get_or_bust(
-        data_dict, ['id', 'version_id_1', 'version_id_2'])
+    dataset_id, tag_1, tag_2 = toolkit.get_or_bust(
+        data_dict, ['id', 'tag_1', 'tag_2'])
     diff_type = data_dict.get('diff_type', 'unified')
 
     toolkit.check_access(
         u'dataset_versions_diff',
         context,
-        {'dataset': dataset_id}
+        {'name_or_id': dataset_id}
     )
 
     dataset_version_1 = _get_dataset_version_dict(
-        context, dataset_id, version_id_1)
+        context, dataset_id, tag_1)
     dataset_version_2 = _get_dataset_version_dict(
-        context, dataset_id, version_id_2)
+        context, dataset_id, tag_2)
 
     diff = _generate_diff(dataset_version_1, dataset_version_2, diff_type)
 
@@ -409,23 +406,24 @@ def dataset_versions_diff(context, data_dict):
     }
 
 
-def _get_dataset_version_dict(context, dataset_id, version_id):
+def _get_dataset_version_dict(context, dataset_id, tag):
 
     dataset_dict = toolkit.get_action('package_show')(
         context, {'id': dataset_id})
 
-    if version_id != 'current':
+    if tag != 'current':
         version_dict = toolkit.get_action('dataset_version_show')(
-            context, {'id': version_id})
+            context, {'tag': tag, 'dataset': dataset_dict['name']})
 
-        if not version_dict['package_id'] == dataset_dict['id']:
+        if not version_dict['package_id'] == dataset_dict['name']:
             raise toolkit.ValidationError(
                 'You can only compare versions of the same dataset')
 
         dataset_dict = toolkit.get_action('package_show_version')(
             context, {
-                'id': version_dict['package_id'],
-                'version_id': version_dict['id']
+                'tag': version_dict['name'],
+                'dataset': version_dict['package_id'],
+                'id': dataset_dict['id']
             }
         )
         # Fetching the license_url from the license registry

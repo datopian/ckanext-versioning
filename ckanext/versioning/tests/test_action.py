@@ -42,7 +42,7 @@ class TestVersionsActions(MetastoreBackendTestBase):
             description="The best dataset ever, it **rules!**")
 
         revision = helpers.get_dataset_current_revision(self.dataset['name'])
-        import ipdb; ipdb.set_trace()
+
         assert_equals(version['package_id'], self.dataset['name'])
         assert_equals(version['revision_ref'],
                       revision)
@@ -285,8 +285,8 @@ class TestVersionsActions(MetastoreBackendTestBase):
             'dataset_versions_diff',
             context,
             id=self.dataset['id'],
-            version_id_1=version_1['id'],
-            version_id_2=version_2['id'],
+            tag_1=version_1['name'],
+            tag_2=version_2['name'],
         )
 
         assert_in(
@@ -316,8 +316,8 @@ class TestVersionsActions(MetastoreBackendTestBase):
             'dataset_versions_diff',
             context,
             id=self.dataset['id'],
-            version_id_1=version_1['id'],
-            version_id_2='current',
+            tag_1=version_1['name'],
+            tag_2='current',
         )
 
         assert_in(
@@ -397,7 +397,8 @@ class TestVersionsPromote(MetastoreBackendTestBase):
         test_helpers.call_action(
             'dataset_version_promote',
             context,
-            version=version['id']
+            tag=version['name'],
+            dataset=version['package_id']
             )
 
         promoted_dataset = test_helpers.call_action(
@@ -482,7 +483,8 @@ class TestVersionsPromote(MetastoreBackendTestBase):
         test_helpers.call_action(
             'dataset_version_promote',
             context,
-            version=version['id']
+            tag=version['name'],
+            dataset=version['package_id']
             )
 
         promoted_dataset = test_helpers.call_action(
