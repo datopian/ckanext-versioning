@@ -13,7 +13,7 @@ from ckanext.versioning.datapackage import dataset_to_frictionless, frictionless
 from ckanext.versioning.logic import action, auth, helpers, uploader
 from ckanext.versioning.model import tables_exist
 
-UPLOAD_TS_FIELD = uploader.UPLOAD_TS_FIELD
+UPLOAD_TS_FIELD = 'versions_upload_timestamp'
 
 log = logging.getLogger(__name__)
 
@@ -167,11 +167,6 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
     def get_blueprint(self):
         return [blueprints.versioning]
-
-    # IUploader
-
-    def get_resource_uploader(self, data_dict):
-        return uploader.get_uploader(self, data_dict)
 
     # IDatasetForm
 
