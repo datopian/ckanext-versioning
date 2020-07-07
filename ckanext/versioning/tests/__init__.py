@@ -2,6 +2,7 @@ import json
 import shutil
 import tempfile
 
+from ckan import model as core_model
 from ckan.common import config
 from ckan.tests import helpers
 
@@ -10,8 +11,6 @@ from ckanext.versioning import model
 
 class FunctionalTestBase(helpers.FunctionalTestBase):
 
-    _load_plugins = ['package_versioning', 'resource_versioning']
-
     def setup(self):
         if not model.tables_exist():
             model.create_tables()
@@ -19,6 +18,15 @@ class FunctionalTestBase(helpers.FunctionalTestBase):
 
 
 class MetastoreBackendTestBase(FunctionalTestBase):
+
+    def _get_context(self, user):
+        userobj = core_model.User.get(user['name'])
+        return {
+            'model': core_model,
+            'user': user['name'],
+            "auth_user_obj": userobj,
+            'ignore_auth': False
+        }
 
     def setup(self):
         super(MetastoreBackendTestBase, self).setup()

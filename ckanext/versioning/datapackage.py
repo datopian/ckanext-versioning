@@ -5,23 +5,24 @@ See http://specs.frictionlessdata.io/data-package/ for datapackage specs
 import re
 from typing import Any, Dict
 
-from ckan_datapackage_tools import converter
+import frictionless_ckan_mapper.ckan_to_frictionless as ctf
+import frictionless_ckan_mapper.frictionless_to_ckan as ftc
 
 FALLBACK_RESOURCE_PATH = 'resource'
 
 
-def dataset_to_frictionless(package):
+def dataset_to_frictionless(ckan_dataset):
     """Convert a CKAN dataset dict to a Frictionless datapackage
     """
-    dp = converter.dataset_to_datapackage(package)
-    _normalize_resource_paths(dp)
-    return dp
+    datapackag = ctf.dataset(ckan_dataset)
+    _normalize_resource_paths(datapackag)
+    return datapackag
 
 
-def frictionless_to_dataset(package):
+def frictionless_to_dataset(datapackage):
     """Convert a Frictionless data datapackage dict to a CKAN dataset dict
     """
-    return converter.datapackage_to_dataset(package)
+    return ftc.package(datapackage)
 
 
 def _normalize_resource_paths(package):
@@ -85,3 +86,10 @@ def _add_filename_suffix(original, suffix):
     if len(parts) > 1:
         filename += '.{}'.format(parts[1])
     return filename
+
+
+def update_ckan_dict(ckan_dict, dataset):
+    """ Updates the CKAN package dict with metadata from metastore.
+    """
+    ckan_dict.update(dataset)
+    return ckan_dict

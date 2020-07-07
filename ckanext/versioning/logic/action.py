@@ -5,13 +5,17 @@ import logging
 import re
 from datetime import datetime
 
+import datapackage
 from ckan import model as core_model
 from ckan.logic.action.get import package_show as core_package_show
 from ckan.logic.action.get import resource_show as core_resource_show
 from ckan.plugins import toolkit
+from ckan_datapackage_tools import converter
+from metastore.backend.exc import Conflict
 from sqlalchemy.exc import IntegrityError
 
 from ckanext.versioning.common import create_author_from_context, get_metastore_backend
+from ckanext.versioning.datapackage import frictionless_to_dataset, update_ckan_dict
 from ckanext.versioning.logic import helpers as h
 from ckanext.versioning.model import DatasetVersion
 
@@ -106,9 +110,27 @@ def dataset_version_create(context, data_dict):
     toolkit.check_access('dataset_version_create', context, data_dict)
     assert context.get('auth_user_obj')  # Should be here after `check_access`
 
-    latest_revision_id = dataset.latest_related_revision.id
+    # TODO: Names like 'Version 1.2' are not allowed as Github tags
+    backend = get_metastore_backend()
+    author = create_author_from_context(context)
+    current_revision = backend.fetch(dataset.name)
+    try:
+        tag_info = backend.tag_create(
+                dataset.name,
+                current_revision.revision,
+                name,
+                description=data_dict.get('description', None),
+                author=author
+                )
+    except Conflict as e:
+        #  Name not unique
+        log.debug("Version name already exists: %s", e)
+        raise toolkit.ValidationError(
+            'Version names must be unique per dataset'
+        )
+
     version = DatasetVersion(package_id=dataset.id,
-                             package_revision_id=latest_revision_id,
+                             package_revision_id=tag_info.revision_ref,
                              name=name,
                              description=data_dict.get('description', None),
                              created=datetime.utcnow(),
@@ -127,17 +149,6 @@ def dataset_version_create(context, data_dict):
         raise toolkit.ValidationError(
             'Version names must be unique per dataset'
         )
-    # TODO: Names like 'Version 1.2' are not allowed as Github tags
-    backend = get_metastore_backend()
-    author = create_author_from_context(context)
-    current_revision = backend.fetch(dataset.name)
-    backend.tag_create(
-            dataset.name,
-            current_revision.revision,
-            name,
-            description=data_dict.get('description', None),
-            author=author
-            )
 
     log.info('Version "%s" created for package %s', name, dataset.id)
 
@@ -147,6 +158,8 @@ def dataset_version_create(context, data_dict):
 def dataset_version_promote(context, data_dict):
     """ Promotes a dataset version to the current state of the dataset.
 
+    param version: the version to be promoted
+    type version: string
     """
     model = context.get('model', core_model)
     version_id = toolkit.get_or_bust(data_dict, ['version'])
@@ -163,12 +176,10 @@ def dataset_version_promote(context, data_dict):
     toolkit.check_access('dataset_version_create', context, data_dict)
     assert context.get('auth_user_obj')  # Should be here after `check_access`
 
-    # use_cache will force to call package_dictize with the revision_id
-    show_ctx = dict(context, use_cache=False,
-                    revision_id=version.package_revision_id)
-    revision_dict = toolkit.get_action('package_show')(
-        show_ctx, {'id': version.package_id}
-    )
+    revision_dict = toolkit.get_action('package_show')(context, {
+        'id': version.package_id,
+        'revision_ref': version.package_revision_id
+    })
 
     promoted_dataset = toolkit.get_action('package_update')(
         context, revision_dict)
@@ -261,24 +272,20 @@ def package_show_revision(context, data_dict):
     Takes the same arguments as 'package_show' but with an additional
     revision ID parameter
 
-    Revision ID can also be specified as part of the package ID, as
-    <package_id>@<revision_id>.
-
     :param id: the id of the package
     :type id: string
-    :param revision_id: the ID of the revision
-    :type revision_id: string
+    :param revision_ref: the ID of the revision
+    :type revision_ref: string
     :returns: A package dict
     :rtype: dict
     """
-    dd = data_dict.copy()
-    if data_dict.get('revision_id') is None and '@' in data_dict['id']:
-        package_id, revision_id = data_dict['id'].split('@', 1)
-        dd['id'] = package_id
+    revision_ref = data_dict.get('revision_ref')
+    if revision_ref is None:
+        result = core_package_show(context, data_dict)
     else:
-        revision_id = context.get('revision_id')
+        result = _get_package_in_revision(context, data_dict, revision_ref)
 
-    return _get_package_in_revision(context, dd, revision_id)
+    return result
 
 
 @toolkit.side_effect_free
@@ -358,20 +365,17 @@ def resource_show_version(context, data_dict):
 def _get_package_in_revision(context, data_dict, revision_id):
     """Internal implementation of package_show_revision
     """
-    current_revision_id = context.get('revision_id', None)
-    if revision_id:
-        context['revision_id'] = revision_id
-
     result = core_package_show(context, data_dict)
     if revision_id:
+        backend = get_metastore_backend()
+        dataset_name = _get_dataset_name(data_dict.get('id'))
+        pkg_info = backend.fetch(dataset_name, revision_id)
+        dataset = frictionless_to_dataset(pkg_info.package)
+        result = update_ckan_dict(result, dataset)
         for resource in result.get('resources', []):
             resource['datastore_active'] = False
             _fix_resource_data(resource, revision_id)
 
-    if current_revision_id:
-        context['revision_id'] = current_revision_id
-    elif revision_id:
-        del context['revision_id']
     # Fetching the license_url, title from the license registry and validate
     if 'license_id' in result and result['license_id']:
         license_data = h.get_license(result['license_id'])
@@ -514,3 +518,15 @@ def _generate_diff(obj1, obj2, diff_type):
         raise toolkit.ValidationError('diff_type not recognized')
 
     return diff
+
+
+def _get_dataset_name(id_or_name):
+    ''' Returns the dataset name given the id or name '''
+    if not core_model.is_id(id_or_name):
+        return id_or_name
+
+    dataset = core_model.Package.get(id_or_name)
+    if not dataset:
+        raise toolkit.ObjectNotFound('Package {} not found'.format(id_or_name))
+
+    return dataset.name

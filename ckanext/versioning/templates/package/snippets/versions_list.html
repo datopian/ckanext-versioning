@@ -27,7 +27,7 @@
         {% for version in versions %}
           <tr>
             <th scope="row" class="dataset-label">
-              <a href="{{ h.url_for_version(pkg, version=version, controller='package', action='read') }}">
+              <a href="{{ h.url_for_version(pkg, version=version, route_name='versioning.show') }}">
                 {{ version.name }}
               </a>
             </th>
