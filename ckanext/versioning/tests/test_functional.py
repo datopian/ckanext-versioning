@@ -1,7 +1,7 @@
 from ckan.plugins import toolkit
 from ckan.tests import factories
 from ckan.tests import helpers as test_helpers
-from nose.tools import assert_equals, assert_in, assert_raises
+from nose.tools import assert_in
 
 from ckanext.versioning.logic import helpers
 from ckanext.versioning.tests import MetastoreBackendTestBase
@@ -24,8 +24,7 @@ class TestPackageShow(MetastoreBackendTestBase):
             'versioning.show',
             package_id=self.dataset['id'])
         environ = {'REMOTE_USER': self.user_name}
-        res = app.get(url, extra_environ=environ, status=200)
-
+        app.get(url, extra_environ=environ, status=200)
 
     def test_package_show_renders_master_if_not_revision(self):
         app = self._get_test_app()
@@ -37,12 +36,11 @@ class TestPackageShow(MetastoreBackendTestBase):
         res = app.get(url, extra_environ=environ)
         assert_in(self.dataset['name'], res.ubody)
 
-
     def test_package_show_renders_version(self):
         app = self._get_test_app()
         context = self._get_context(self.user)
 
-        version = test_helpers.call_action(
+        test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
@@ -73,7 +71,7 @@ class TestPackageShow(MetastoreBackendTestBase):
         app = self._get_test_app()
         context = self._get_context(self.user)
 
-        version = test_helpers.call_action(
+        test_helpers.call_action(
             'dataset_version_create',
             context,
             dataset=self.dataset['id'],
@@ -81,7 +79,6 @@ class TestPackageShow(MetastoreBackendTestBase):
             description="The best dataset ever, it **rules!**")
 
         rev_ref = helpers.get_dataset_current_revision(self.dataset['name'])
-        original_notes = self.dataset['notes']
 
         test_helpers.call_action(
             'package_patch',

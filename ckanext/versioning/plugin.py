@@ -99,7 +99,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
         revision_ref = None
         try:
             revision_ref = toolkit.request.view_args['revision_ref']
-        except (AttributeError, KeyError) as e:
+        except (AttributeError, KeyError):
             pass
 
         if revision_ref:

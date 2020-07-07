@@ -117,13 +117,14 @@ def get_dataset_current_revision(dataset_name):
 
     return backend.fetch(dataset_name).revision
 
+
 def get_dataset_version(package_id, revision_ref):
     '''Get the DatasetVersion for a package and revision_ref.
     '''
-    version = model.Session.query(DatasetVersion). \
-                filter(DatasetVersion.package_id == package_id). \
-                filter(DatasetVersion.package_revision_id == revision_ref). \
-                one_or_none()
+    version = model.Session.query(DatasetVersion).\
+        filter(DatasetVersion.package_id == package_id).\
+        filter(DatasetVersion.package_revision_id == revision_ref).\
+        one_or_none()
 
     if not version:
         raise toolkit.ObjectNotFound('Version not found')

@@ -3,7 +3,6 @@ from ckan.tests import factories
 from ckan.tests import helpers as test_helpers
 from nose.tools import assert_equals, assert_in, assert_raises
 
-from ckanext.versioning.common import get_metastore_backend
 from ckanext.versioning.logic import helpers
 from ckanext.versioning.tests import MetastoreBackendTestBase
 

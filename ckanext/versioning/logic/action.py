@@ -5,12 +5,10 @@ import logging
 import re
 from datetime import datetime
 
-import datapackage
 from ckan import model as core_model
 from ckan.logic.action.get import package_show as core_package_show
 from ckan.logic.action.get import resource_show as core_resource_show
 from ckan.plugins import toolkit
-from ckan_datapackage_tools import converter
 from metastore.backend.exc import Conflict
 from sqlalchemy.exc import IntegrityError
 
