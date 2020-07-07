@@ -28,7 +28,7 @@ def test_resource_path_multiple_resources():
         "resources": [{"url": "data/foo.csv", "name": "resource 1", "id": "resource-1"},
                       {"url": "https://example.com/data.csv", "name": "resource 2", "id": "resource-2"},
                       {"path": "an/existing/path.csv", "name": "resource 3", "id": "resource-3"},
-                      {"name": "my-resource", "type": "xls", "sha256": SHA256, "id": "resource-4"}]
+                      {"name": "my-resource", "format": "xls", "sha256": SHA256, "id": "resource-4"}]
     }
     resources = datapackage.dataset_to_frictionless(dataset)['resources']
     assert_equals(resources[0]['path'], 'data/foo.csv')
@@ -39,7 +39,7 @@ def test_resource_path_multiple_resources():
 
 @parameterized([
     ('/absolute/data.csv', 'absolute/data.csv'),
-    ('./relative/data.csv', './relative/data.csv'),
+    ('./relative/data.csv', 'relative/data.csv'),
     ('local/with/../../../parent/ref.csv', 'local/with/parent/ref.csv'),
     ('local/with/./././parent/ref.csv', 'local/with/parent/ref.csv'),
     ('../upper/dir/ref.csv', 'upper/dir/ref.csv'),
@@ -55,7 +55,7 @@ def test_resource_path_conflicting_paths_fixed():
         "resources": [{"url": "data/foo.csv", "name": "resource 1", "id": "r-1"},
                       {"url": "data/bar.csv", "name": "resource 2", "id": "r-2"},
                       {"path": "data/foo.csv", "name": "resource 3", "id": "r-3"},
-                      {"name": "data/foo", "type": "csv", "sha256": SHA256, "id": "r-4"},
+                      {"name": "data/foo", "format": "csv", "sha256": SHA256, "id": "r-4"},
                       {"path": "../data/foo.csv", "name": "resource 5", "id": "r-5"}]
     }
     resources = datapackage.dataset_to_frictionless(dataset)['resources']

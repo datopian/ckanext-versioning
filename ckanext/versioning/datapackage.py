@@ -14,9 +14,8 @@ FALLBACK_RESOURCE_PATH = 'resource'
 def dataset_to_frictionless(ckan_dataset):
     """Convert a CKAN dataset dict to a Frictionless datapackage
     """
-    datapackag = ctf.dataset(ckan_dataset)
-    _normalize_resource_paths(datapackag)
-    return datapackag
+    _normalize_resource_paths(ckan_dataset)
+    return ctf.dataset(ckan_dataset)
 
 
 def frictionless_to_dataset(datapackage):
@@ -28,11 +27,13 @@ def frictionless_to_dataset(datapackage):
 def _normalize_resource_paths(package):
     """Normalize the paths of all resources
     """
-    parent_dir_re = re.compile(r'(?:/?\.\./|/\./)+')
+    parent_dir_re = re.compile(r'/?(?:(?:\.)+/)+')
     existing_paths = set()
 
-    for counter, resource in enumerate(package['resources']):
+    for counter, resource in enumerate(package.get('resources', [])):
         path = _get_resource_path(resource)
+        if path is None:
+            continue
 
         path = parent_dir_re.sub('/', path)
         try:
@@ -43,6 +44,8 @@ def _normalize_resource_paths(package):
 
         if path in existing_paths:
             path = _add_filename_suffix(path, '-{}'.format(counter))
+        else:
+            existing_paths.add(path)
 
         resource['path'] = path
 
@@ -73,7 +76,7 @@ def _get_resource_path(resource):
     elif 'sha256' in resource and 'name' in resource and 'format' in resource:
         path = '{name}.{format}'.format(name=resource['name'], format=resource['format']).lower()
     else:
-        path = FALLBACK_RESOURCE_PATH
+        path = None
     return path
 
 
