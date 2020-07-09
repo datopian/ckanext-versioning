@@ -2,8 +2,8 @@
 
 See http://specs.frictionlessdata.io/data-package/ for datapackage specs
 """
-import frictionless_ckan_mapper.ckan_to_frictionless as ctf
-import frictionless_ckan_mapper.frictionless_to_ckan as ftc
+# import frictionless_ckan_mapper.ckan_to_frictionless as ctf
+# import frictionless_ckan_mapper.frictionless_to_ckan as ftc
 
 
 def dataset_to_frictionless(package):
