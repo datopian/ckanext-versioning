@@ -39,14 +39,14 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
     def get_actions(self):
         return {
-            'dataset_version_create': action.dataset_version_create,
-            'dataset_version_delete': action.dataset_version_delete,
-            'dataset_version_list': action.dataset_version_list,
-            'dataset_version_update': action.dataset_version_update,
-            'dataset_version_show': action.dataset_version_show,
-            'dataset_version_promote': action.dataset_version_promote,
-            'package_show_version': action.package_show_version,
-            'resource_show_version': action.resource_show_version,
+            'dataset_tag_create': action.dataset_tag_create,
+            'dataset_tag_delete': action.dataset_tag_delete,
+            'dataset_tag_list': action.dataset_tag_list,
+            'dataset_tag_update': action.dataset_tag_update,
+            'dataset_tag_show': action.dataset_tag_show,
+            'dataset_tag_promote': action.dataset_tag_promote,
+            'package_show_tag': action.package_show_tag,
+            'resource_show_tag': action.resource_show_tag,
             'dataset_versions_diff': action.dataset_versions_diff,
 
             # Overridden
@@ -58,10 +58,10 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
     def get_auth_functions(self):
         return {
-            'dataset_version_create': auth.dataset_version_create,
-            'dataset_version_delete': auth.dataset_version_delete,
-            'dataset_version_list': auth.dataset_version_list,
-            'dataset_version_show': auth.dataset_version_show,
+            'dataset_tag_create': auth.dataset_tag_create,
+            'dataset_tag_delete': auth.dataset_tag_delete,
+            'dataset_tag_list': auth.dataset_tag_list,
+            'dataset_tag_show': auth.dataset_tag_show,
             'dataset_versions_diff': auth.dataset_versions_diff,
         }
 
@@ -69,7 +69,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
     def get_helpers(self):
         return {
-            'url_for_version': helpers.url_for_version,
+            'url_for_tag': helpers.url_for_tag,
             'url_for_resource_version': helpers.url_for_resource_version,
             'dataset_version_has_link_resources': helpers.has_link_resources,
             'dataset_version_compare_pkg_dicts': helpers.compare_pkg_dicts,
@@ -79,7 +79,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
     def before_view(self, pkg_dict):
         try:
-            versions = action.dataset_version_list({"ignore_auth": True},
+            versions = action.dataset_tag_list({"ignore_auth": True},
                                                    {"dataset": pkg_dict['id']})
         except toolkit.ObjectNotFound:
             # Do not blow up if package is gone
@@ -87,14 +87,17 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
         toolkit.c.versions = versions
 
-        revision_ref = None
+        tag = None
         try:
-            revision_ref = toolkit.request.view_args['revision_ref']
+            tag = toolkit.request.view_args['tag']
         except (AttributeError, KeyError) as e:
             pass
 
-        if revision_ref:
-            version = helpers.get_dataset_version(pkg_dict['id'], revision_ref)
+        if tag:
+            version = action.dataset_tag_show({}, {
+                'dataset': pkg_dict['name'],
+                'tag': tag
+            })
             toolkit.c.current_version = version
 
             # Hide package creation / update date if viewing a specific version

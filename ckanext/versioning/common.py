@@ -32,3 +32,19 @@ def create_author_from_context(context):
         author = Author(name=context['user'])
 
     return author
+
+
+def tag_to_dict(tag):
+    ''' Returns a dict version of a TagInfo object
+
+    # TODO: Refactor or move it to metastore-lib
+    '''
+    return {
+        'package_id': tag.package_id,
+        'name': tag.name,
+        'created': tag.created.isoformat(),
+        'revision_ref': tag.revision_ref,
+        'author': tag.author.name,
+        'author_email': tag.author.email,
+        'description': tag.description
+    }

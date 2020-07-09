@@ -67,7 +67,7 @@ The following ``curl`` examples all assume the ``$API_KEY`` environment
 variable is set and contains a valid CKAN API key, belonging to a user with
 sufficient privileges; Output is indented and cleaned up for readability.
 
-``dataset_version_list``
+``dataset_tag_list``
 ^^^^^^^^^^^^^^^^^^^^^^^^
 List versions for a dataset.
 
@@ -80,10 +80,10 @@ List versions for a dataset.
 **Example**::
 
   $ curl -H "Authorization: $API_KEY" \
-    https://ckan.example.com/api/3/action/dataset_version_list?dataset=my-awesome-dataset
+    https://ckan.example.com/api/3/action/dataset_tag_list?dataset=my-awesome-dataset
 
   {
-    "help": "http://ckan.example.com/api/3/action/help_show?name=dataset_version_list",
+    "help": "http://ckan.example.com/api/3/action/help_show?name=dataset_tag_list",
     "success": true,
     "result": [
       {
@@ -116,12 +116,12 @@ List versions for a dataset.
     ]
   }
 
-``dataset_version_show``
+``dataset_tag_show``
 ^^^^^^^^^^^^^^^^^^^^^^^^
 Show info about a specific dataset version.
 
 Note that this will show the version information - not the dataset metadata or
-data (see `package_show_version`_)
+data (see `package_show_tag`_)
 
 **HTTP Method**: ``GET``
 
@@ -132,10 +132,10 @@ data (see `package_show_version`_)
 **Example**::
 
   $ curl -H "Authorization: $API_KEY" \
-    https://ckan.example.com/api/3/action/dataset_version_show?id=5942ab7a-67cb-426c-ad99-dd4519530bc7
+    https://ckan.example.com/api/3/action/dataset_tag_show?id=5942ab7a-67cb-426c-ad99-dd4519530bc7
 
   {
-    "help": "http://ckan.example.com/api/3/action/help_show?name=dataset_version_show",
+    "help": "http://ckan.example.com/api/3/action/help_show?name=dataset_tag_show",
     "success": true,
     "result": {
       "id": "5942ab7a-67cb-426c-ad99-dd4519530bc7",
@@ -148,7 +148,7 @@ data (see `package_show_version`_)
     }
   }
 
-``dataset_version_create``
+``dataset_tag_create``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Create a new version for the specified dataset *current* revision. You are
 required to specify a name for the version, and can optionally specify a
@@ -169,11 +169,11 @@ description.
   $ curl -H "Authorization: $API_KEY" \
          -H "Content-type: application/json" \
          -X POST \
-         https://ckan.example.com/api/3/action/dataset_version_create \
+         https://ckan.example.com/api/3/action/dataset_tag_create \
          -d '{"dataset":"3b5a4f83-8770-4e8c-9630-c8abf6aa20f4", "name": "Version 1.3", "description": "With extra Awesome Sauce"}'
 
   {
-    "help": "https://ckan.example.com/api/3/action/help_show?name=dataset_version_create",
+    "help": "https://ckan.example.com/api/3/action/help_show?name=dataset_tag_create",
     "success": true,
     "result": {
       "id": "e1a77b78-dfaf-4c05-a261-ff01af10d601",
@@ -186,7 +186,7 @@ description.
     }
   }
 
-``dataset_version_delete``
+``dataset_tag_delete``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 Delete a dataset version. This does not delete the metadata revision, just the
 named version pointing to it, and any data not pointed to by any other version.
@@ -203,22 +203,22 @@ named version pointing to it, and any data not pointed to by any other version.
   $ curl -H "Authorization: $API_KEY" \
          -H "Content-type: application/json" \
          -X POST \
-         https://ckan.example.com/api/3/action/dataset_version_delete \
+         https://ckan.example.com/api/3/action/dataset_tag_delete \
          -d '{"id":"e1a77b78-dfaf-4c05-a261-ff01af10d601"}'
 
   {
-    "help": "https://ckan.example.com/api/3/action/help_show?name=dataset_version_delete",
+    "help": "https://ckan.example.com/api/3/action/help_show?name=dataset_tag_delete",
     "success": true,
     "result": null
   }
 
-``package_show_version``
+``package_show_tag``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Show a dataset (AKA package) in a given version. This is identical to the
 built-in ``package_show`` action, but shows dataset metadata for a given
 version, and adds some versioning related metadata.
 
-This is useful if you've used ``dataset_version_list`` to get all
+This is useful if you've used ``dataset_tag_list`` to get all
 named versions for a dataset, and now want to show that dataset in a specific
 version.
 
@@ -237,10 +237,10 @@ returned, but will include a list of versions for the dataset.
 Fetching dataset metadata in a specified version::
 
   $ curl -H "Authorization: $API_KEY" \
-         'https://ckan.example.com/api/3/action/package_show_version?id=3b5a4f83-8770-4e8c-9630-c8abf6aa20f4&version_id=5942ab7a-67cb-426c-ad99-dd4519530bc7'
+         'https://ckan.example.com/api/3/action/package_show_tag?id=3b5a4f83-8770-4e8c-9630-c8abf6aa20f4&version_id=5942ab7a-67cb-426c-ad99-dd4519530bc7'
 
   {
-    "help": "https://ckan.example.com/api/3/action/help_show?name=package_show_version",
+    "help": "https://ckan.example.com/api/3/action/help_show?name=package_show_tag",
     "success": true,
     "result": {
       "maintainer": "Bob Paulson",
@@ -288,7 +288,7 @@ the ``version_id`` parameter was provided.
 Fetching the current version of dataset metadata in a specified version::
 
   {
-    "help": "https://ckan.example.com/api/3/action/help_show?name=package_show_version",
+    "help": "https://ckan.example.com/api/3/action/help_show?name=package_show_tag",
     "success": true,
     "result": {
       "license_title": "Green",
@@ -359,7 +359,7 @@ Fetching the current version of dataset metadata in a specified version::
 
 
 Note the ``version`` list, only included when showing the latest
-dataset version via ``package_show_version``.
+dataset version via ``package_show_tag``.
 
 ---------------
 Config Settings

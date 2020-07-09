@@ -85,7 +85,7 @@ ckan.module('dataset_version_controls', function ($) {
         },
 
         _delete: function (versionId) {
-            const action = 'dataset_version_delete';
+            const action = 'dataset_tag_delete';
             let params = {
                 id: versionId
             };
@@ -101,7 +101,7 @@ ckan.module('dataset_version_controls', function ($) {
         },
 
         _create: function (datasetId, versionName, description) {
-            const action = 'dataset_version_create';
+            const action = 'dataset_tag_create';
             let params = {
                 dataset: datasetId,
                 name: versionName,
@@ -119,7 +119,7 @@ ckan.module('dataset_version_controls', function ($) {
         },
 
         _update: function (datasetId, versionId, versionName, description) {
-            const action = 'dataset_version_update';
+            const action = 'dataset_tag_update';
             let params = {
                 dataset: datasetId,
                 version: versionId,
@@ -138,7 +138,7 @@ ckan.module('dataset_version_controls', function ($) {
         },
 
         _promote: function (versionId) {
-            const action = 'dataset_version_promote';
+            const action = 'dataset_tag_promote';
             let params = {
                 version: versionId
             };
