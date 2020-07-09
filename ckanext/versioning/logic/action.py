@@ -3,16 +3,12 @@ import difflib
 import json
 import logging
 import re
-from datetime import datetime
 
-import datapackage
 from ckan import model as core_model
 from ckan.logic.action.get import package_show as core_package_show
 from ckan.logic.action.get import resource_show as core_resource_show
 from ckan.plugins import toolkit
-from ckan_datapackage_tools import converter
 from metastore.backend import exc
-from sqlalchemy.exc import IntegrityError
 
 from ckanext.versioning.common import create_author_from_context, get_metastore_backend, tag_to_dict
 from ckanext.versioning.datapackage import frictionless_to_dataset, update_ckan_dict
@@ -52,7 +48,7 @@ def dataset_tag_update(context, data_dict):
                 new_description=data_dict.get('description', None),
                 author=author
                 )
-    except exc.NotFound as e:
+    except exc.NotFound:
         raise toolkit.ObjectNotFound("Dataset version not found.")
 
     log.info('Version "%s" with id %s edited correctly', name, tag)
@@ -177,7 +173,7 @@ def dataset_tag_show(context, data_dict):
     backend = get_metastore_backend()
     try:
         tag_info = backend.tag_fetch(dataset_name, tag)
-    except exc.NotFound as e:
+    except exc.NotFound:
         raise toolkit.ObjectNotFound('Dataset version not found.')
 
     return tag_to_dict(tag_info)
@@ -198,7 +194,7 @@ def dataset_tag_delete(context, data_dict):
     backend = get_metastore_backend()
     try:
         backend.tag_delete(dataset_name, tag)
-    except Exception as e:
+    except Exception:
         raise toolkit.ObjectNotFound('Dataset version not found')
 
     log.info('Version %s of dataset %s was deleted',
@@ -251,8 +247,7 @@ def package_show_tag(context, data_dict):
         package_dict['version_metadata'] = version_dict
     else:
         package_dict = core_package_show(context, data_dict)
-        versions = dataset_tag_list(context,
-                                        {'dataset': package_dict['id']})
+        versions = dataset_tag_list(context, {'dataset': package_dict['id']})
         package_dict['versions'] = versions
 
     return package_dict

@@ -5,6 +5,7 @@ from flask import Blueprint
 
 versioning = Blueprint('versioning', __name__)
 
+
 def show(package_id, tag=None):
     context = {
         'model': model, 'session': model.Session,
@@ -12,7 +13,7 @@ def show(package_id, tag=None):
         'auth_user_obj': toolkit.c.userobj
     }
 
-    data_dict = {'id':package_id, 'include_tracking': True}
+    data_dict = {'id': package_id, 'include_tracking': True}
     if tag:
         data_dict['tag'] = tag
 

@@ -10,7 +10,7 @@ def dataset_to_frictionless(package):
     """Convert a CKAN dataset dict to a Frictionless datapackage
     """
     # TODO: Use ckan_mapper
-    #return ctf.dataset(package)
+    # return ctf.dataset(package)
     return package
 
 
@@ -18,7 +18,7 @@ def frictionless_to_dataset(package):
     """Convert a Frictionless data datapackage dict to a CKAN dataset dict
     """
     # TODO: Use ckan_mapper
-    #return ftc.package(package)
+    # return ftc.package(package)
     return package
 
 

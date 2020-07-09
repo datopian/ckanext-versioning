@@ -5,11 +5,10 @@ from datetime import datetime
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES
-from ckan_datapackage_tools import converter
 
 from ckanext.versioning import blueprints
 from ckanext.versioning.common import create_author_from_context, get_metastore_backend
-from ckanext.versioning.datapackage import dataset_to_frictionless, frictionless_to_dataset, update_ckan_dict
+from ckanext.versioning.datapackage import dataset_to_frictionless
 from ckanext.versioning.logic import action, auth, helpers, uploader
 
 UPLOAD_TS_FIELD = uploader.UPLOAD_TS_FIELD
@@ -79,8 +78,10 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
     def before_view(self, pkg_dict):
         try:
-            versions = action.dataset_tag_list({"ignore_auth": True},
-                                                   {"dataset": pkg_dict['id']})
+            versions = action.dataset_tag_list(
+                {"ignore_auth": True},
+                {"dataset": pkg_dict['id']}
+                )
         except toolkit.ObjectNotFound:
             # Do not blow up if package is gone
             return pkg_dict
@@ -90,7 +91,8 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
         tag = None
         try:
             tag = toolkit.request.view_args['tag']
-        except (AttributeError, KeyError) as e:
+        except (AttributeError, KeyError):
+            # TODO: How to correctly access to a request arg in CKAN?
             pass
 
         if tag:
