@@ -101,7 +101,6 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
             })
             revision = filter(lambda d: d['revision_ref'] == revision_ref, tag_list)[0]
 
-
             # current_version needs to be a Tag (eg, name and description).
             # This assumes that there is a tag for the given revision
             toolkit.c.current_version = revision
