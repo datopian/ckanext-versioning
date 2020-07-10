@@ -31,7 +31,6 @@ def dataset_tag_update(context, data_dict):
     :returns: the edited version
     :rtype: dictionary
     """
-    import ipdb; ipdb.set_trace()
     tag, name, dataset_name_or_id = toolkit.get_or_bust(
         data_dict, ['tag', 'name', 'dataset']
         )
@@ -112,7 +111,6 @@ def dataset_tag_promote(context, data_dict):
     param version: the version to be promoted
     type version: string
     """
-    import ipdb; ipdb.set_trace()
     version = dataset_tag_show(context, data_dict)
 
     if not version:
