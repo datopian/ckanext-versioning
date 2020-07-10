@@ -27,7 +27,7 @@
         {% for version in versions %}
           <tr>
             <th scope="row" class="dataset-label">
-              <a href="{{ h.url_for_tag(pkg, version=version, route_name='versioning.show') }}">
+              <a href="{{ h.url_for_revision(pkg, version=version, route_name='versioning.show') }}">
                 {{ version.name }}
               </a>
             </th>

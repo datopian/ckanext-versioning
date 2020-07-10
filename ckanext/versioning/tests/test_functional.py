@@ -58,7 +58,7 @@ class TestPackageShow(MetastoreBackendTestBase):
         url = toolkit.url_for(
             'versioning.show',
             package_id=self.dataset['id'],
-            tag=version['name'])
+            revision_ref=version['revision_ref'])
 
         environ = {'REMOTE_USER': self.user_name}
         res = app.get(url, extra_environ=environ)
@@ -86,7 +86,7 @@ class TestPackageShow(MetastoreBackendTestBase):
         url = toolkit.url_for(
             'versioning.show',
             package_id=self.dataset['id'],
-            tag=version['name'])
+            revision_ref=version['revision_ref'])
 
         environ = {'REMOTE_USER': self.user_name}
         res = app.get(url, extra_environ=environ)

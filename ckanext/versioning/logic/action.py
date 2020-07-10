@@ -108,8 +108,10 @@ def dataset_tag_create(context, data_dict):
 def dataset_tag_promote(context, data_dict):
     """ Promotes a dataset version to the current state of the dataset.
 
-    param version: the version to be promoted
-    type version: string
+    param tag: the tag to be promoted
+    type tag: string
+    param dataset: the dataset name to be promoted
+    type dataset: string
     """
     version = dataset_tag_show(context, data_dict)
 
@@ -122,7 +124,7 @@ def dataset_tag_promote(context, data_dict):
 
     revision_dict = toolkit.get_action('package_show')(context, {
         'id': version['package_id'],
-        'tag': version['name']
+        'revision_ref': version['revision_ref']
     })
 
     promoted_dataset = toolkit.get_action('package_update')(
@@ -210,16 +212,16 @@ def package_show_revision(context, data_dict):
 
     :param id: the id of the package
     :type id: string
-    :param tag: the ID of the revision
-    :type tag: string
+    :param revision_ref: the ID of the revision
+    :type revision_ref: string
     :returns: A package dict
     :rtype: dict
     """
-    tag = data_dict.get('tag')
-    if tag is None:
+    revision_ref = data_dict.get('revision_ref')
+    if revision_ref is None:
         result = core_package_show(context, data_dict)
     else:
-        result = _get_package_in_revision(context, data_dict, tag)
+        result = _get_package_in_revision(context, data_dict, revision_ref)
 
     return result
 

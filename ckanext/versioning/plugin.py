@@ -68,7 +68,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
     def get_helpers(self):
         return {
-            'url_for_tag': helpers.url_for_tag,
+            'url_for_revision': helpers.url_for_revision,
             'url_for_resource_version': helpers.url_for_resource_version,
             'dataset_version_has_link_resources': helpers.has_link_resources,
             'dataset_version_compare_pkg_dicts': helpers.compare_pkg_dicts,
@@ -88,19 +88,23 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
         toolkit.c.versions = versions
 
-        tag = None
+        revision_ref = None
         try:
-            tag = toolkit.request.view_args['tag']
+            revision_ref = toolkit.request.view_args['revision_ref']
         except (AttributeError, KeyError):
             # TODO: How to correctly access to a request arg in CKAN?
             pass
 
-        if tag:
-            version = action.dataset_tag_show({}, {
-                'dataset': pkg_dict['name'],
-                'tag': tag
+        if revision_ref:
+            tag_list = action.dataset_tag_list({}, {
+                'dataset': pkg_dict['name']
             })
-            toolkit.c.current_version = version
+            revision = filter(lambda d: d['revision_ref'] == revision_ref, tag_list)[0]
+
+
+            # current_version needs to be a Tag (eg, name and description).
+            # This assumes that there is a tag for the given revision
+            toolkit.c.current_version = revision
 
             # Hide package creation / update date if viewing a specific version
             pkg_dict['metadata_created'] = None

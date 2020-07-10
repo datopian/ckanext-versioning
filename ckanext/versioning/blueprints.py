@@ -6,7 +6,7 @@ from flask import Blueprint
 versioning = Blueprint('versioning', __name__)
 
 
-def show(package_id, tag=None):
+def show(package_id, revision_ref=None):
     context = {
         'model': model, 'session': model.Session,
         'user': toolkit.c.user, 'for_view': True,
@@ -14,8 +14,8 @@ def show(package_id, tag=None):
     }
 
     data_dict = {'id': package_id, 'include_tracking': True}
-    if tag:
-        data_dict['tag'] = tag
+    if revision_ref:
+        data_dict['revision_ref'] = revision_ref
 
     pkg_dict = toolkit.get_action('package_show')(context, data_dict)
 
@@ -76,4 +76,4 @@ def changes(id):
 
 versioning.add_url_rule('/dataset/<id>/version/changes', view_func=changes)
 versioning.add_url_rule('/dataset/<package_id>/show', view_func=show)
-versioning.add_url_rule('/dataset/<package_id>/show/<tag>', view_func=show)
+versioning.add_url_rule('/dataset/<package_id>/show/<revision_ref>', view_func=show)

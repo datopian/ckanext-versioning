@@ -5,7 +5,7 @@ from ckanext.versioning.common import get_metastore_backend
 from ckanext.versioning.lib.changes import check_metadata_changes, check_resource_changes
 
 
-def url_for_tag(package, version=None, **kwargs):
+def url_for_revision(package, version=None, **kwargs):
     """Get the URL for a package / resource related action, with potential
     revision ID taken from a version info object
 
@@ -19,7 +19,7 @@ def url_for_tag(package, version=None, **kwargs):
     name; Otherwise, `controller` and `action` are expected as arguments.
     """
     if version:
-        kwargs['tag'] = version['name']
+        kwargs['revision_ref'] = version['revision_ref']
     kwargs['package_id'] = package.get('name', package['id'])
 
     if 'route_name' in kwargs:
@@ -30,7 +30,7 @@ def url_for_tag(package, version=None, **kwargs):
 
 
 def url_for_resource_version(package, version, **kwargs):
-    """Similar to `url_for_tag`, but also adds an "@revision" to the
+    """Similar to `url_for_revision`, but also adds an "@revision" to the
     resource_id if it and a version is provided
 
     :param package:
@@ -42,7 +42,7 @@ def url_for_resource_version(package, version, **kwargs):
         kwargs['resource_id'] = "@".join([kwargs['resource_id'],
                                           version['package_revision_id']])
 
-    return url_for_tag(package, version, **kwargs)
+    return url_for_revision(package, version, **kwargs)
 
 
 def has_link_resources(package):
