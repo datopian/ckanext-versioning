@@ -3,10 +3,9 @@ from ckan.plugins import toolkit
 
 from ckanext.versioning.common import get_metastore_backend
 from ckanext.versioning.lib.changes import check_metadata_changes, check_resource_changes
-from ckanext.versioning.model import DatasetVersion
 
 
-def url_for_version(package, version=None, **kwargs):
+def url_for_tag(package, version=None, **kwargs):
     """Get the URL for a package / resource related action, with potential
     revision ID taken from a version info object
 
@@ -20,7 +19,7 @@ def url_for_version(package, version=None, **kwargs):
     name; Otherwise, `controller` and `action` are expected as arguments.
     """
     if version:
-        kwargs['revision_ref'] = version['package_revision_id']
+        kwargs['tag'] = version['name']
     kwargs['package_id'] = package.get('name', package['id'])
 
     if 'route_name' in kwargs:
@@ -31,7 +30,7 @@ def url_for_version(package, version=None, **kwargs):
 
 
 def url_for_resource_version(package, version, **kwargs):
-    """Similar to `url_for_version`, but also adds an "@revision" to the
+    """Similar to `url_for_tag`, but also adds an "@revision" to the
     resource_id if it and a version is provided
 
     :param package:
@@ -43,7 +42,7 @@ def url_for_resource_version(package, version, **kwargs):
         kwargs['resource_id'] = "@".join([kwargs['resource_id'],
                                           version['package_revision_id']])
 
-    return url_for_version(package, version, **kwargs)
+    return url_for_tag(package, version, **kwargs)
 
 
 def has_link_resources(package):
@@ -112,20 +111,9 @@ def get_dataset_revision_list(dataset_name):
 
 def get_dataset_current_revision(dataset_name):
     '''Get the current revision in metastore-lib for the given dataset.
+
+    # TODO: This shouldn't be necessary. It is only used in tests.
     '''
     backend = get_metastore_backend()
 
     return backend.fetch(dataset_name).revision
-
-def get_dataset_version(package_id, revision_ref):
-    '''Get the DatasetVersion for a package and revision_ref.
-    '''
-    version = model.Session.query(DatasetVersion). \
-                filter(DatasetVersion.package_id == package_id). \
-                filter(DatasetVersion.package_revision_id == revision_ref). \
-                one_or_none()
-
-    if not version:
-        raise toolkit.ObjectNotFound('Version not found')
-
-    return version.as_dict()

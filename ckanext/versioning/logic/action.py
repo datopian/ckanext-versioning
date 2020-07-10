@@ -3,32 +3,27 @@ import difflib
 import json
 import logging
 import re
-from datetime import datetime
 
-import datapackage
 from ckan import model as core_model
 from ckan.logic.action.get import package_show as core_package_show
 from ckan.logic.action.get import resource_show as core_resource_show
 from ckan.plugins import toolkit
-from ckan_datapackage_tools import converter
-from metastore.backend.exc import Conflict
-from sqlalchemy.exc import IntegrityError
+from metastore.backend import exc
 
-from ckanext.versioning.common import create_author_from_context, get_metastore_backend
+from ckanext.versioning.common import create_author_from_context, get_metastore_backend, tag_to_dict
 from ckanext.versioning.datapackage import frictionless_to_dataset, update_ckan_dict
 from ckanext.versioning.logic import helpers as h
-from ckanext.versioning.model import DatasetVersion
 
 log = logging.getLogger(__name__)
 
 
-def dataset_version_update(context, data_dict):
+def dataset_tag_update(context, data_dict):
     """Update a version from the current dataset.
 
     :param dataset: the id or name of the dataset
     :type dataset: string
-    :param version: the id of the version
-    :type version: string
+    :param tag: the id of the version
+    :type tag: string
     :param name: A short name for the version
     :type name: string
     :param description: A description for the version
@@ -36,56 +31,32 @@ def dataset_version_update(context, data_dict):
     :returns: the edited version
     :rtype: dictionary
     """
-    model = context.get('model', core_model)
-    version_id, name = toolkit.get_or_bust(data_dict, ['version', 'name'])
-
-    # I'll create my own session! With Blackjack! And H**kers!
-    session = model.meta.create_local_session()
-
-    version = session.query(DatasetVersion).\
-        filter(DatasetVersion.id == version_id).\
-        one_or_none()
-
-    if not version:
-        raise toolkit.ObjectNotFound('Version not found')
-
-    current_name = version.name
-
-    toolkit.check_access('dataset_version_create', context, data_dict)
-    assert context.get('auth_user_obj')  # Should be here after `check_access`
-
-    version.name = name
-    version.description = data_dict.get('description', None)
-
-    session.add(version)
-
-    try:
-        session.commit()
-    except IntegrityError as e:
-        #  Name not unique, or foreign key constraint violated
-        session.rollback()
-        log.debug("DB integrity error (version name not unique?): %s", e)
-        raise toolkit.ValidationError(
-            'Version names must be unique per dataset'
+    tag, name, dataset_name_or_id = toolkit.get_or_bust(
+        data_dict, ['tag', 'name', 'dataset']
         )
+
+    toolkit.check_access('dataset_tag_create', context, data_dict)
+    assert context.get('auth_user_obj')  # Should be here after `check_access`
 
     backend = get_metastore_backend()
     author = create_author_from_context(context)
-    dataset = model.Package.get(version.package_id)
-    backend.tag_update(
-            dataset.name,
-            current_name,
-            new_name=name,
-            new_description=data_dict.get('description', None),
-            author=author
-            )
+    try:
+        tag_info = backend.tag_update(
+                _get_dataset_name(dataset_name_or_id),
+                tag,
+                new_name=name,
+                new_description=data_dict.get('description', None),
+                author=author
+                )
+    except exc.NotFound:
+        raise toolkit.ObjectNotFound("Dataset version not found.")
 
-    log.info('Version "%s" with id %s edited correctly', name, version_id)
+    log.info('Version "%s" with id %s edited correctly', name, tag)
 
-    return version.as_dict()
+    return tag_to_dict(tag_info)
 
 
-def dataset_version_create(context, data_dict):
+def dataset_tag_create(context, data_dict):
     """Create a new version from the current dataset's revision
 
     Currently you must have editor level access on the dataset
@@ -107,7 +78,7 @@ def dataset_version_create(context, data_dict):
     if not dataset:
         raise toolkit.ObjectNotFound('Dataset not found')
 
-    toolkit.check_access('dataset_version_create', context, data_dict)
+    toolkit.check_access('dataset_tag_create', context, data_dict)
     assert context.get('auth_user_obj')  # Should be here after `check_access`
 
     # TODO: Names like 'Version 1.2' are not allowed as Github tags
@@ -122,63 +93,36 @@ def dataset_version_create(context, data_dict):
                 description=data_dict.get('description', None),
                 author=author
                 )
-    except Conflict as e:
+    except exc.Conflict as e:
         #  Name not unique
         log.debug("Version name already exists: %s", e)
         raise toolkit.ValidationError(
             'Version names must be unique per dataset'
         )
 
-    version = DatasetVersion(package_id=dataset.id,
-                             package_revision_id=tag_info.revision_ref,
-                             name=name,
-                             description=data_dict.get('description', None),
-                             created=datetime.utcnow(),
-                             creator_user_id=context['auth_user_obj'].id)
-
-    # I'll create my own session! With Blackjack! And H**kers!
-    session = model.meta.create_local_session()
-    session.add(version)
-
-    try:
-        session.commit()
-    except IntegrityError as e:
-        #  Name not unique, or foreign key constraint violated
-        session.rollback()
-        log.debug("DB integrity error (version name not unique?): %s", e)
-        raise toolkit.ValidationError(
-            'Version names must be unique per dataset'
-        )
-
     log.info('Version "%s" created for package %s', name, dataset.id)
 
-    return version.as_dict()
+    return tag_to_dict(tag_info)
 
 
-def dataset_version_promote(context, data_dict):
+def dataset_tag_promote(context, data_dict):
     """ Promotes a dataset version to the current state of the dataset.
 
     param version: the version to be promoted
     type version: string
     """
-    model = context.get('model', core_model)
-    version_id = toolkit.get_or_bust(data_dict, ['version'])
-
-    session = model.Session()
-    version = session.query(DatasetVersion).\
-        filter(DatasetVersion.id == version_id).\
-        one_or_none()
+    version = dataset_tag_show(context, data_dict)
 
     if not version:
         raise toolkit.ObjectNotFound('Version not found')
 
-    data_dict['dataset'] = version.package_id
-    toolkit.check_access('dataset_version_create', context, data_dict)
+    data_dict['dataset'] = version['package_id']
+    toolkit.check_access('dataset_tag_create', context, data_dict)
     assert context.get('auth_user_obj')  # Should be here after `check_access`
 
     revision_dict = toolkit.get_action('package_show')(context, {
-        'id': version.package_id,
-        'revision_ref': version.package_revision_id
+        'id': version['package_id'],
+        'tag': version['name']
     })
 
     promoted_dataset = toolkit.get_action('package_update')(
@@ -186,14 +130,14 @@ def dataset_version_promote(context, data_dict):
 
     log.info(
         'Version "%s" promoted as latest for package %s',
-        version.name,
+        version['name'],
         promoted_dataset['title'])
 
     return promoted_dataset
 
 
 @toolkit.side_effect_free
-def dataset_version_list(context, data_dict):
+def dataset_tag_list(context, data_dict):
     """List versions of a given dataset
 
     :param dataset: the id or name of the dataset
@@ -207,62 +151,54 @@ def dataset_version_list(context, data_dict):
     if not dataset:
         raise toolkit.ObjectNotFound('Dataset not found')
 
-    toolkit.check_access('dataset_version_list', context, data_dict)
+    backend = get_metastore_backend()
 
-    versions = model.Session.query(DatasetVersion).\
-        filter(DatasetVersion.package_id == dataset.id).\
-        order_by(DatasetVersion.created.desc())
+    tag_list = backend.tag_list(dataset.name)
 
-    return [v.as_dict() for v in versions]
+    return [tag_to_dict(t) for t in tag_list]
 
 
 @toolkit.side_effect_free
-def dataset_version_show(context, data_dict):
+def dataset_tag_show(context, data_dict):
     """Get a specific version by ID
 
-    :param id: the id of the version
-    :type id: string
+    :param dataset: the name of the dataset
+    :type dataset: string
+    :param tag: the id of the version
+    :type tag: string
     :returns: The matched version
     :rtype: dict
     """
-    model = context.get('model', core_model)
-    version_id = toolkit.get_or_bust(data_dict, ['id'])
-    version = model.Session.query(DatasetVersion).get(version_id)
-    if not version:
-        raise toolkit.ObjectNotFound('Dataset version not found')
-
-    toolkit.check_access('dataset_version_show', context,
-                         {"dataset": version.package_id, "id": version_id})
-
-    return version.as_dict()
-
-
-def dataset_version_delete(context, data_dict):
-    """Delete a specific version by ID
-
-    :param id: the id of the version
-    :type id: string
-    :returns: The matched version
-    :rtype: dict
-    """
-    model = context.get('model', core_model)
-    version_id = toolkit.get_or_bust(data_dict, ['id'])
-    version = model.Session.query(DatasetVersion).get(version_id)
-    if not version:
-        raise toolkit.ObjectNotFound('Dataset version not found')
-
-    toolkit.check_access('dataset_version_delete', context,
-                         {"dataset": version.package_id, "id": version_id})
-
-    model.Session.delete(version)
-    model.repo.commit()
-
-    dataset = model.Package.get(version.package_id)
+    dataset_name, tag = toolkit.get_or_bust(data_dict, ['dataset', 'tag'])
     backend = get_metastore_backend()
-    backend.tag_delete(dataset.name, version.name)
+    try:
+        tag_info = backend.tag_fetch(dataset_name, tag)
+    except exc.NotFound:
+        raise toolkit.ObjectNotFound('Dataset version not found.')
+
+    return tag_to_dict(tag_info)
+
+
+def dataset_tag_delete(context, data_dict):
+    """Delete a specific version of a dataset
+
+    :param dataset: name of the dataset
+    :type dataset: string
+    :param tag: the id of the version
+    :type tag: string
+    :returns: The matched version
+    :rtype: dict
+    """
+    dataset_name, tag = toolkit.get_or_bust(data_dict, ['dataset', 'tag'])
+
+    backend = get_metastore_backend()
+    try:
+        backend.tag_delete(dataset_name, tag)
+    except Exception:
+        raise toolkit.ObjectNotFound('Dataset version not found')
 
     log.info('Version %s of dataset %s was deleted',
-             version_id, version.package_id)
+             tag, dataset_name)
 
 
 @toolkit.side_effect_free
@@ -274,22 +210,22 @@ def package_show_revision(context, data_dict):
 
     :param id: the id of the package
     :type id: string
-    :param revision_ref: the ID of the revision
-    :type revision_ref: string
+    :param tag: the ID of the revision
+    :type tag: string
     :returns: A package dict
     :rtype: dict
     """
-    revision_ref = data_dict.get('revision_ref')
-    if revision_ref is None:
+    tag = data_dict.get('tag')
+    if tag is None:
         result = core_package_show(context, data_dict)
     else:
-        result = _get_package_in_revision(context, data_dict, revision_ref)
+        result = _get_package_in_revision(context, data_dict, tag)
 
     return result
 
 
 @toolkit.side_effect_free
-def package_show_version(context, data_dict):
+def package_show_tag(context, data_dict):
     """Wrapper for package_show with some additional version related info
 
     This works just like package_show but also optionally accepts `version_id`
@@ -300,16 +236,18 @@ def package_show_version(context, data_dict):
     If version_id is not provided, package data will include a `versions` key
     with a list of versions for this package.
     """
-    version_id = data_dict.get('version_id', None)
-    if version_id:
-        version_dict = dataset_version_show(context, {'id': version_id})
+    tag = data_dict.get('tag', None)
+    dataset_name = data_dict.get('dataset', None)
+    if tag and dataset_name:
+        version_dict = dataset_tag_show(
+            context, {'tag': tag, 'dataset': dataset_name}
+            )
         package_dict = _get_package_in_revision(
-            context, data_dict, version_dict['package_revision_id'])
+            context, data_dict, version_dict['name'])
         package_dict['version_metadata'] = version_dict
     else:
         package_dict = core_package_show(context, data_dict)
-        versions = dataset_version_list(context,
-                                        {'dataset': package_dict['id']})
+        versions = dataset_tag_list(context, {'dataset': package_dict['id']})
         package_dict['versions'] = versions
 
     return package_dict
@@ -346,13 +284,13 @@ def resource_show_revision(context, data_dict):
 
 
 @toolkit.side_effect_free
-def resource_show_version(context, data_dict):
+def resource_show_tag(context, data_dict):
     """Wrapper for resource_show allowing to get a resource from a specific
     dataset version
     """
     version_id = data_dict.get('version_id', None)
     if version_id:
-        version_dict = dataset_version_show(context, {'id': version_id})
+        version_dict = dataset_tag_show(context, {'id': version_id})
         resource_dict = _get_resource_in_revision(
             context, data_dict, version_dict['package_revision_id'])
         resource_dict['version_metadata'] = version_dict
@@ -439,20 +377,20 @@ def dataset_versions_diff(context, data_dict):
 
     '''
 
-    dataset_id, version_id_1, version_id_2 = toolkit.get_or_bust(
-        data_dict, ['id', 'version_id_1', 'version_id_2'])
+    dataset_id, tag_1, tag_2 = toolkit.get_or_bust(
+        data_dict, ['id', 'tag_1', 'tag_2'])
     diff_type = data_dict.get('diff_type', 'unified')
 
     toolkit.check_access(
         u'dataset_versions_diff',
         context,
-        {'dataset': dataset_id}
+        {'name_or_id': dataset_id}
     )
 
     dataset_version_1 = _get_dataset_version_dict(
-        context, dataset_id, version_id_1)
+        context, dataset_id, tag_1)
     dataset_version_2 = _get_dataset_version_dict(
-        context, dataset_id, version_id_2)
+        context, dataset_id, tag_2)
 
     diff = _generate_diff(dataset_version_1, dataset_version_2, diff_type)
 
@@ -463,23 +401,24 @@ def dataset_versions_diff(context, data_dict):
     }
 
 
-def _get_dataset_version_dict(context, dataset_id, version_id):
+def _get_dataset_version_dict(context, dataset_id, tag):
 
     dataset_dict = toolkit.get_action('package_show')(
         context, {'id': dataset_id})
 
-    if version_id != 'current':
-        version_dict = toolkit.get_action('dataset_version_show')(
-            context, {'id': version_id})
+    if tag != 'current':
+        version_dict = toolkit.get_action('dataset_tag_show')(
+            context, {'tag': tag, 'dataset': dataset_dict['name']})
 
-        if not version_dict['package_id'] == dataset_dict['id']:
+        if not version_dict['package_id'] == dataset_dict['name']:
             raise toolkit.ValidationError(
                 'You can only compare versions of the same dataset')
 
-        dataset_dict = toolkit.get_action('package_show_version')(
+        dataset_dict = toolkit.get_action('package_show_tag')(
             context, {
-                'id': version_dict['package_id'],
-                'version_id': version_dict['id']
+                'tag': version_dict['name'],
+                'dataset': version_dict['package_id'],
+                'id': dataset_dict['id']
             }
         )
         # Fetching the license_url from the license registry
