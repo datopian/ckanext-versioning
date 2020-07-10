@@ -17,7 +17,7 @@ ckan.module('dataset_version_controls', function ($) {
             this._packageId = this.options.packageId;
             this._packageUrl = this.options.packageUrl;
             this._linkResources = (this.options.linkResources == 'True');
-            this._versionId = this.options.versionId || null
+            this._tag = String(this.options.tag) || null
 
             if(this._linkResources){
                 this.$(".modal-body").append(
@@ -38,37 +38,41 @@ ckan.module('dataset_version_controls', function ($) {
 
         _onDelete: function (evt)
         {
-            let versionName = $(evt.target).data('version-name');
-            let versionId = $(evt.target).data('version-id');
-            if (confirm("Are you sure you want to delete the version \"" + versionName + "\" of this dataset?")) {
-                return this._delete(versionId);
+            let dataset = $(evt.target).data('dataset');
+            let tag = $(evt.target).data('version-id');
+            tag = String(tag)
+
+            if (confirm("Are you sure you want to delete the version \"" + tag + "\" of this dataset?")) {
+                return this._delete(tag, dataset);
             }
         },
 
         _onCreate: function (evt)
         {
-            let versionName = evt.target.querySelector("input[name=version_name]").value.trim();
+            let tagName = evt.target.querySelector("input[name=version_name]").value.trim();
             let description = evt.target.querySelector("textarea[name=details]").value.trim();
-
             evt.preventDefault();
-            return this._create(this._packageId, versionName, description);
+            return this._create(this._packageId, tagName, description);
         },
 
         _onUpdate: function(evt)
         {
-            let versionName = evt.target.querySelector("input[name=version_name]").value.trim();
+            let tagName = evt.target.querySelector("input[name=version_name]").value.trim();
             let description = evt.target.querySelector("textarea[name=details]").value.trim();
 
             evt.preventDefault();
-            return this._update(this._packageId, this._versionId, versionName, description);
+            return this._update(this._packageId, this._tag, tagName, description);
         },
 
         _onPromote: function(evt)
         {
-            let versionName = $(evt.target).data('version-name');
-            let versionId = $(evt.target).data('version-id');
-            if (confirm("Are you sure you want to promote version \"" + versionName + "\" to be the current version of the dataset? \n\nNote that when doing this the current state will be lost. If you want to preserve it please cancel and create a Version for it first.")) {
-                return this._promote(versionId);
+            let dataset = $(evt.target).data('dataset');
+            let tag = $(evt.target).data('version-id');
+            tag = String(tag)
+
+
+            if (confirm("Are you sure you want to promote version \"" + tag + "\" to be the current version of the dataset? \n\nNote that when doing this the current state will be lost. If you want to preserve it please cancel and create a Version for it first.")) {
+                return this._promote(tag, dataset);
             }
         },
 
@@ -84,10 +88,11 @@ ckan.module('dataset_version_controls', function ($) {
             });
         },
 
-        _delete: function (versionId) {
+        _delete: function (tag, dataset) {
             const action = 'dataset_tag_delete';
             let params = {
-                id: versionId
+                tag: tag,
+                dataset: dataset
             };
             let that = this;
             this._apiPost(action, params)
@@ -100,11 +105,11 @@ ckan.module('dataset_version_controls', function ($) {
                 }.bind(this));
         },
 
-        _create: function (datasetId, versionName, description) {
+        _create: function (datasetId, tagName, description) {
             const action = 'dataset_tag_create';
             let params = {
                 dataset: datasetId,
-                name: versionName,
+                name: tagName,
                 description: description
             };
             let that = this;
@@ -118,12 +123,12 @@ ckan.module('dataset_version_controls', function ($) {
                 });
         },
 
-        _update: function (datasetId, versionId, versionName, description) {
+        _update: function (datasetId, tag, tagName, description) {
             const action = 'dataset_tag_update';
             let params = {
                 dataset: datasetId,
-                version: versionId,
-                name: versionName,
+                tag: tag,
+                name: tagName,
                 description: description
             };
             let that = this;
@@ -137,10 +142,11 @@ ckan.module('dataset_version_controls', function ($) {
                 });
         },
 
-        _promote: function (versionId) {
+        _promote: function (tag, dataset) {
             const action = 'dataset_tag_promote';
             let params = {
-                version: versionId
+                tag: tag,
+                dataset: dataset
             };
             let that = this;
             this._apiPost(action, params)

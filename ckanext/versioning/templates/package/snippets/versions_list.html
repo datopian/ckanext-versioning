@@ -9,7 +9,7 @@
     data-module-package-url="{{ h.url_for(controller='package', action='read', id=pkg.name) }}"
     data-module-link-resources="{{ h.dataset_version_has_link_resources(pkg) }}"
     {% if c.current_version %}
-        data-module-version-id="{{ c.current_version.id }}"
+        data-module-tag="{{ c.current_version.name }}"
     {% endif %}>
 
   {% if not c.revision_date %}
@@ -48,16 +48,16 @@
 
   {% if c.current_version %}
     {% if h.check_access('dataset_tag_delete', {'dataset': pkg.id}) %}
-      <button data-version-id="{{ c.current_version.id }}"
-              data-version-name="{{ c.current_version.name }}"
+      <button data-version-id="{{ c.current_version.name }}"
+      data-dataset="{{ c.current_version.package_id }}"
               class="delete-version-btn btn btn-danger">
         {{ _('Delete Version') }}
       </button>
     {% endif %}
 
     {% if h.check_access('dataset_tag_create', {'dataset': pkg.id}) %}
-    <button data-version-id="{{ c.current_version.id }}"
-            data-version-name="{{ c.current_version.name }}"
+    <button data-version-id="{{ c.current_version.name }}"
+            data-dataset="{{ c.current_version.package_id }}"
             class="promote-version-btn btn btn-primary pull-right">
         {{ _('Promote Version') }}
     </button>
