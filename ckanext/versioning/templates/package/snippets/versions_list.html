@@ -9,7 +9,7 @@
     data-module-package-url="{{ h.url_for(controller='package', action='read', id=pkg.name) }}"
     data-module-link-resources="{{ h.dataset_version_has_link_resources(pkg) }}"
     {% if c.current_version %}
-        data-module-version-id="{{ c.current_version.id }}"
+        data-module-tag="{{ c.current_version.name }}"
     {% endif %}>
 
   {% if not c.revision_date %}
@@ -27,7 +27,7 @@
         {% for version in versions %}
           <tr>
             <th scope="row" class="dataset-label">
-              <a href="{{ h.url_for_version(pkg, version=version, route_name='versioning.show') }}">
+              <a href="{{ h.url_for_tag(pkg, version=version, route_name='versioning.show') }}">
                 {{ version.name }}
               </a>
             </th>
@@ -47,17 +47,17 @@
   {% endif %}
 
   {% if c.current_version %}
-    {% if h.check_access('dataset_version_delete', {'dataset': pkg.id}) %}
-      <button data-version-id="{{ c.current_version.id }}"
-              data-version-name="{{ c.current_version.name }}"
+    {% if h.check_access('dataset_tag_delete', {'dataset': pkg.id}) %}
+      <button data-version-id="{{ c.current_version.name }}"
+      data-dataset="{{ c.current_version.package_id }}"
               class="delete-version-btn btn btn-danger">
         {{ _('Delete Version') }}
       </button>
     {% endif %}
 
-    {% if h.check_access('dataset_version_create', {'dataset': pkg.id}) %}
-    <button data-version-id="{{ c.current_version.id }}"
-            data-version-name="{{ c.current_version.name }}"
+    {% if h.check_access('dataset_tag_create', {'dataset': pkg.id}) %}
+    <button data-version-id="{{ c.current_version.name }}"
+            data-dataset="{{ c.current_version.package_id }}"
             class="promote-version-btn btn btn-primary pull-right">
         {{ _('Promote Version') }}
     </button>
@@ -68,7 +68,7 @@
     {% endif %}
 
   {% elif not c.revision_date %}
-    {% if h.check_access('dataset_version_create', {'dataset': pkg.id}) %}
+    {% if h.check_access('dataset_tag_create', {'dataset': pkg.id}) %}
       <!-- Button trigger modal -->
       <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createVersionModal">
         {{ _('Create Version') }}
