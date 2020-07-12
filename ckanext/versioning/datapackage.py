@@ -7,6 +7,7 @@ from typing import Any, Dict
 
 import frictionless_ckan_mapper.ckan_to_frictionless as ctf
 import frictionless_ckan_mapper.frictionless_to_ckan as ftc
+from six import iteritems
 
 FALLBACK_RESOURCE_PATH = 'resource'
 
@@ -14,14 +15,33 @@ FALLBACK_RESOURCE_PATH = 'resource'
 def dataset_to_frictionless(ckan_dataset):
     """Convert a CKAN dataset dict to a Frictionless datapackage
     """
-    _normalize_resource_paths(ckan_dataset)
-    return ctf.dataset(ckan_dataset)
+    package = _convert_excluding_path(ckan_dataset)
+    _normalize_resource_paths(package)
+    return package
 
 
 def frictionless_to_dataset(datapackage):
     """Convert a Frictionless data datapackage dict to a CKAN dataset dict
     """
     return ftc.package(datapackage)
+
+
+def _convert_excluding_path(ckan_dataset):
+    """Convert a CKAN dataset to a frictionless package but exclude custom `path` values
+
+    This is done because frictionless_ckan_mapper will override `path` if URL is set for
+    a resource, but we want to preserve `path` if it was previously set.
+    """
+    existing_paths = {i: r['path']
+                      for i, r in enumerate(ckan_dataset.get('resources', []))
+                      if 'path' in r}
+
+    package = ctf.dataset(ckan_dataset)
+
+    for i, path in iteritems(existing_paths):
+        package['resources'][i]['path'] = path
+
+    return package
 
 
 def _normalize_resource_paths(package):
