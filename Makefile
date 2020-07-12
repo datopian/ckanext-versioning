@@ -37,7 +37,7 @@ CKAN_SOLR_PASSWORD := ckan
 DATASTORE_DB_NAME := datastore
 DATASTORE_DB_RO_USER := datastore_ro
 DATASTORE_DB_RO_PASSWORD := datastore_ro
-CKAN_LOAD_PLUGINS := stats text_view image_view recline_view datastore package_versioning resource_versioning
+CKAN_LOAD_PLUGINS := stats text_view image_view recline_view datastore package_versioning
 
 CKAN_CONFIG_VALUES := \
 		ckan.site_url=$(CKAN_SITE_URL) \
