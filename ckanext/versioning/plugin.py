@@ -10,7 +10,7 @@ from ckan_datapackage_tools import converter
 from ckanext.versioning import blueprints
 from ckanext.versioning.common import create_author_from_context, get_metastore_backend
 from ckanext.versioning.datapackage import dataset_to_frictionless, frictionless_to_dataset, update_ckan_dict
-from ckanext.versioning.logic import action, auth, helpers, uploader
+from ckanext.versioning.logic import action, auth, helpers
 from ckanext.versioning.model import tables_exist
 
 
