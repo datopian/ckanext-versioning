@@ -11,7 +11,6 @@ from ckanext.versioning.common import create_author_from_context, get_metastore_
 from ckanext.versioning.datapackage import dataset_to_frictionless
 from ckanext.versioning.logic import action, auth, helpers
 
-
 log = logging.getLogger(__name__)
 
 
