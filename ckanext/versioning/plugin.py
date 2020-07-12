@@ -1,10 +1,8 @@
 # encoding: utf-8
 import logging
-from datetime import datetime
 
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
-from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES
 
 from ckanext.versioning import blueprints
 from ckanext.versioning.common import create_author_from_context, get_metastore_backend
