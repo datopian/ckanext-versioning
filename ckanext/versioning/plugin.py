@@ -13,7 +13,6 @@ from ckanext.versioning.datapackage import dataset_to_frictionless, frictionless
 from ckanext.versioning.logic import action, auth, helpers, uploader
 from ckanext.versioning.model import tables_exist
 
-UPLOAD_TS_FIELD = 'versions_upload_timestamp'
 
 log = logging.getLogger(__name__)
 
@@ -24,7 +23,6 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IAuthFunctions)
     plugins.implements(plugins.IPackageController, inherit=True)
-    plugins.implements(plugins.IUploader, inherit=True)
     plugins.implements(plugins.IDatasetForm, inherit=True)
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IBlueprint)
@@ -170,55 +168,8 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
     # IDatasetForm
 
-    def update_package_schema(self):
-        schema = super(PackageVersioningPlugin, self).update_package_schema()
-        schema['resources'].update(
-            {UPLOAD_TS_FIELD: [
-                toolkit.get_validator('ignore_missing'),
-                toolkit.get_converter('convert_to_extras')
-            ]}
-        )
-        return schema
-
-    def show_package_schema(self):
-        schema = super(PackageVersioningPlugin, self).show_package_schema()
-        schema['resources'].update(
-            {UPLOAD_TS_FIELD: [
-                toolkit.get_converter('convert_from_extras'),
-                toolkit.get_validator('ignore_missing')
-            ]}
-        )
-        return schema
-
     def is_fallback(self):
         return False
 
     def package_types(self):
         return []
-
-
-class ResourceVersioningPlugin(plugins.SingletonPlugin):
-    plugins.implements(plugins.IResourceController, inherit=True)
-
-    # IResourceController
-
-    def before_create(self, context, data_dict):
-        return self._set_upload_timestamp(data_dict)
-
-    def before_update(self, context, current, data_dict):
-        return self._set_upload_timestamp(data_dict, current)
-
-    def _set_upload_timestamp(self, data_dict, current=None):
-        """When creating or updating a resource, if it contains a file upload,
-        save the upload timestamp as a resource extra field
-        """
-        if isinstance(data_dict.get('upload'), ALLOWED_UPLOAD_TYPES):
-            ts = datetime.now().isoformat()
-            log.debug("Setting upload timestamp to %s=%s", UPLOAD_TS_FIELD, ts)
-            data_dict[UPLOAD_TS_FIELD] = ts
-        elif data_dict.get('clear_upload') and UPLOAD_TS_FIELD in data_dict:
-            log.debug("Clearing upload timestamp field")
-            del data_dict[UPLOAD_TS_FIELD]
-        elif current and UPLOAD_TS_FIELD in current:
-            data_dict[UPLOAD_TS_FIELD] = current[UPLOAD_TS_FIELD]
-        return data_dict
