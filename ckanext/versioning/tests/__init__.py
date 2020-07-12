@@ -6,18 +6,8 @@ from ckan import model as core_model
 from ckan.common import config
 from ckan.tests import helpers
 
-from ckanext.versioning import model
 
-
-class FunctionalTestBase(helpers.FunctionalTestBase):
-
-    def setup(self):
-        if not model.tables_exist():
-            model.create_tables()
-        super(FunctionalTestBase, self).setup()
-
-
-class MetastoreBackendTestBase(FunctionalTestBase):
+class MetastoreBackendTestBase(helpers.FunctionalTestBase):
 
     def _get_context(self, user):
         userobj = core_model.User.get(user['name'])
