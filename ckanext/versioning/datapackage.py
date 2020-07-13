@@ -115,4 +115,15 @@ def update_ckan_dict(ckan_dict, dataset):
     """ Updates the CKAN package dict with metadata from metastore.
     """
     ckan_dict.update(dataset)
+    if len(ckan_dict.get('extras', [])) > 0:
+        ckan_dict['extras'] = _normalize_extras(ckan_dict)
     return ckan_dict
+
+
+def _normalize_extras(ckan_dict):
+    """Normalize extras returned by frictionless-ckan-mapper
+
+    This removes any extras item that already exists in the main CKAN package dict,
+    because we know this will not pass validation
+    """
+    return [e for e in ckan_dict['extras'] if e['key'] not in ckan_dict]

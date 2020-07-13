@@ -22,6 +22,7 @@ CKAN_CLI := $(shell which ckan | head -n1)
 TEST_INI_PATH := ./test.ini
 SENTINELS := .make-status
 TEST_PATH :=
+TEST_EXTRA_ARGS :=
 
 PYTHON_VERSION := $(shell $(PYTHON) -c 'import sys; print(sys.version_info[0])')
 
@@ -217,7 +218,7 @@ $(SENTINELS)/tests-passed: $(SENTINELS)/test-setup $(shell find $(PACKAGE_DIR) -
 	      --with-pylons=$(TEST_INI_PATH) \
           --nologcapture \
           --with-doctest \
-		  $(COVERAGE_ARG) $(PACKAGE_DIR)/tests/$(TEST_PATH)
+		  $(COVERAGE_ARG) $(TEST_EXTRA_ARGS) $(PACKAGE_DIR)/tests/$(TEST_PATH)
 	@touch $@
 
 ## Add test users

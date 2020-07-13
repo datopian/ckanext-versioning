@@ -24,5 +24,4 @@ class MetastoreBackendTestBase(helpers.FunctionalTestBase):
         config['ckanext.versioning.backend_config'] = json.dumps({"uri": self._backend_dir})
 
     def teardown(self):
-        super(MetastoreBackendTestBase, self).setup()
         shutil.rmtree(self._backend_dir)
