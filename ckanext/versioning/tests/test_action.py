@@ -559,7 +559,7 @@ class TestPackageShowRevision(MetastoreBackendTestBase):
             'package_show',
             context,
             id=self.dataset['id'],
-            tag=initial_revision
+            revision_ref=initial_revision
             )
 
         assert_equals(initial_dataset['title'], 'Test Dataset')

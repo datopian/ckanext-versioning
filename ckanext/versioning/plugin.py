@@ -1,17 +1,13 @@
 # encoding: utf-8
 import logging
-from datetime import datetime
 
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
-from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES
 
 from ckanext.versioning import blueprints
 from ckanext.versioning.common import create_author_from_context, get_metastore_backend
 from ckanext.versioning.datapackage import dataset_to_frictionless
-from ckanext.versioning.logic import action, auth, helpers, uploader
-
-UPLOAD_TS_FIELD = uploader.UPLOAD_TS_FIELD
+from ckanext.versioning.logic import action, auth, helpers
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +18,6 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IAuthFunctions)
     plugins.implements(plugins.IPackageController, inherit=True)
-    plugins.implements(plugins.IUploader, inherit=True)
     plugins.implements(plugins.IDatasetForm, inherit=True)
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IBlueprint)
@@ -68,7 +63,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
     def get_helpers(self):
         return {
-            'url_for_tag': helpers.url_for_tag,
+            'url_for_revision': helpers.url_for_revision,
             'url_for_resource_version': helpers.url_for_resource_version,
             'dataset_version_has_link_resources': helpers.has_link_resources,
             'dataset_version_compare_pkg_dicts': helpers.compare_pkg_dicts,
@@ -88,19 +83,22 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
         toolkit.c.versions = versions
 
-        tag = None
+        revision_ref = None
         try:
-            tag = toolkit.request.view_args['tag']
+            revision_ref = toolkit.request.view_args['revision_ref']
         except (AttributeError, KeyError):
             # TODO: How to correctly access to a request arg in CKAN?
             pass
 
-        if tag:
-            version = action.dataset_tag_show({}, {
-                'dataset': pkg_dict['name'],
-                'tag': tag
+        if revision_ref:
+            tag_list = action.dataset_tag_list({}, {
+                'dataset': pkg_dict['name']
             })
-            toolkit.c.current_version = version
+            revision = filter(lambda d: d['revision_ref'] == revision_ref, tag_list)[0]
+
+            # current_version needs to be a Tag (eg, name and description).
+            # This assumes that there is a tag for the given revision
+            toolkit.c.current_version = revision
 
             # Hide package creation / update date if viewing a specific version
             pkg_dict['metadata_created'] = None
@@ -163,62 +161,10 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
     def get_blueprint(self):
         return [blueprints.versioning]
 
-    # IUploader
-
-    def get_resource_uploader(self, data_dict):
-        return uploader.get_uploader(self, data_dict)
-
     # IDatasetForm
-
-    def update_package_schema(self):
-        schema = super(PackageVersioningPlugin, self).update_package_schema()
-        schema['resources'].update(
-            {UPLOAD_TS_FIELD: [
-                toolkit.get_validator('ignore_missing'),
-                toolkit.get_converter('convert_to_extras')
-            ]}
-        )
-        return schema
-
-    def show_package_schema(self):
-        schema = super(PackageVersioningPlugin, self).show_package_schema()
-        schema['resources'].update(
-            {UPLOAD_TS_FIELD: [
-                toolkit.get_converter('convert_from_extras'),
-                toolkit.get_validator('ignore_missing')
-            ]}
-        )
-        return schema
 
     def is_fallback(self):
         return False
 
     def package_types(self):
         return []
-
-
-class ResourceVersioningPlugin(plugins.SingletonPlugin):
-    plugins.implements(plugins.IResourceController, inherit=True)
-
-    # IResourceController
-
-    def before_create(self, context, data_dict):
-        return self._set_upload_timestamp(data_dict)
-
-    def before_update(self, context, current, data_dict):
-        return self._set_upload_timestamp(data_dict, current)
-
-    def _set_upload_timestamp(self, data_dict, current=None):
-        """When creating or updating a resource, if it contains a file upload,
-        save the upload timestamp as a resource extra field
-        """
-        if isinstance(data_dict.get('upload'), ALLOWED_UPLOAD_TYPES):
-            ts = datetime.now().isoformat()
-            log.debug("Setting upload timestamp to %s=%s", UPLOAD_TS_FIELD, ts)
-            data_dict[UPLOAD_TS_FIELD] = ts
-        elif data_dict.get('clear_upload') and UPLOAD_TS_FIELD in data_dict:
-            log.debug("Clearing upload timestamp field")
-            del data_dict[UPLOAD_TS_FIELD]
-        elif current and UPLOAD_TS_FIELD in current:
-            data_dict[UPLOAD_TS_FIELD] = current[UPLOAD_TS_FIELD]
-        return data_dict
