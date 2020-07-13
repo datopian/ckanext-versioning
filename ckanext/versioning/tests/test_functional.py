@@ -39,7 +39,7 @@ class TestPackageShow(MetastoreBackendTestBase):
         app = self._get_test_app()
         context = self._get_context(self.user)
 
-        version = test_helpers.call_action(
+        tag = test_helpers.call_action(
             'dataset_tag_create',
             context,
             dataset=self.dataset['id'],
@@ -58,7 +58,7 @@ class TestPackageShow(MetastoreBackendTestBase):
         url = toolkit.url_for(
             'versioning.show',
             package_id=self.dataset['id'],
-            tag=version['name'])
+            tag=tag['name'])
 
         environ = {'REMOTE_USER': self.user_name}
         res = app.get(url, extra_environ=environ)
@@ -69,7 +69,7 @@ class TestPackageShow(MetastoreBackendTestBase):
         app = self._get_test_app()
         context = self._get_context(self.user)
 
-        version = test_helpers.call_action(
+        tag = test_helpers.call_action(
             'dataset_tag_create',
             context,
             dataset=self.dataset['id'],
@@ -86,7 +86,7 @@ class TestPackageShow(MetastoreBackendTestBase):
         url = toolkit.url_for(
             'versioning.show',
             package_id=self.dataset['id'],
-            tag=version['name'])
+            tag=tag['name'])
 
         environ = {'REMOTE_USER': self.user_name}
         res = app.get(url, extra_environ=environ)
