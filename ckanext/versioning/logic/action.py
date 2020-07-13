@@ -380,7 +380,7 @@ def dataset_versions_diff(context, data_dict):
     '''
 
     dataset_id, tag_1, tag_2 = toolkit.get_or_bust(
-        data_dict, ['id', 'tag_1', 'tag_2'])
+        data_dict, ['id', 'version_id_1', 'version_id_2'])
     diff_type = data_dict.get('diff_type', 'unified')
 
     toolkit.check_access(

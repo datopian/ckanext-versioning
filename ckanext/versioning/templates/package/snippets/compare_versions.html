@@ -1,7 +1,7 @@
 <div class="modal fade" id="compareVersionsModal" tabindex="-1" role="dialog" aria-labelledby="compareVersionsModalLabel">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <form class="compare-versions-form" action="{{ h.url_for('versions.changes', id=pkg.name) }}">
+        <form class="compare-versions-form" action="{{ h.url_for('versioning.changes', id=pkg.name) }}">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             <h4 class="modal-title" id="compareVersionsModalLabel">Compare versions of dataset {{ pkg.title }}</h4>
