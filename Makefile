@@ -21,6 +21,8 @@ CKAN_CLI := $(shell which ckan | head -n1)
 
 TEST_INI_PATH := ./test.ini
 SENTINELS := .make-status
+TEST_PATH :=
+TEST_EXTRA_ARGS :=
 
 PYTHON_VERSION := $(shell $(PYTHON) -c 'import sys; print(sys.version_info[0])')
 
@@ -37,7 +39,7 @@ CKAN_SOLR_PASSWORD := ckan
 DATASTORE_DB_NAME := datastore
 DATASTORE_DB_RO_USER := datastore_ro
 DATASTORE_DB_RO_PASSWORD := datastore_ro
-CKAN_LOAD_PLUGINS := stats text_view image_view recline_view datastore package_versioning resource_versioning
+CKAN_LOAD_PLUGINS := stats text_view image_view recline_view datastore package_versioning
 
 CKAN_CONFIG_VALUES := \
 		ckan.site_url=$(CKAN_SITE_URL) \
@@ -216,7 +218,7 @@ $(SENTINELS)/tests-passed: $(SENTINELS)/test-setup $(shell find $(PACKAGE_DIR) -
 	      --with-pylons=$(TEST_INI_PATH) \
           --nologcapture \
           --with-doctest \
-		  $(COVERAGE_ARG) $(PACKAGE_DIR)/tests/$(TEST_PATH)
+		  $(COVERAGE_ARG) $(TEST_EXTRA_ARGS) $(PACKAGE_DIR)/tests/$(TEST_PATH)
 	@touch $@
 
 ## Add test users
