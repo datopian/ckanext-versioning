@@ -284,8 +284,8 @@ class TestVersionsActions(MetastoreBackendTestBase):
             'dataset_versions_diff',
             context,
             id=self.dataset['id'],
-            tag_1=version_1['name'],
-            tag_2=version_2['name'],
+            version_id_1=version_1['name'],
+            version_id_2=version_2['name'],
         )
 
         assert_in(
@@ -315,8 +315,8 @@ class TestVersionsActions(MetastoreBackendTestBase):
             'dataset_versions_diff',
             context,
             id=self.dataset['id'],
-            tag_1=version_1['name'],
-            tag_2='current',
+            version_id_1=version_1['name'],
+            version_id_2='current',
         )
 
         assert_in(
