@@ -83,7 +83,6 @@ setup(
     entry_points={
         'ckan.plugins': [
             'package_versioning = ckanext.versioning.plugin:PackageVersioningPlugin',
-            'resource_versioning = ckanext.versioning.plugin:ResourceVersioningPlugin'
         ],
         'paste.paster_command': [
             'versioning = ckanext.versioning.commands:VersioningCommand'

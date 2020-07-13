@@ -7,10 +7,3 @@ def test_package_versioning_plugin():
     """
     p = plugin.PackageVersioningPlugin()
     assert p
-
-
-def test_resource_versioning_plugin():
-    """This is here just as a sanity test
-    """
-    p = plugin.ResourceVersioningPlugin()
-    assert p
