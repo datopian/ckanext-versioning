@@ -64,7 +64,6 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
     def get_helpers(self):
         return {
             'url_for_revision': helpers.url_for_revision,
-            'url_for_resource_version': helpers.url_for_resource_version,
             'dataset_version_has_link_resources': helpers.has_link_resources,
             'dataset_version_compare_pkg_dicts': helpers.compare_pkg_dicts,
         }

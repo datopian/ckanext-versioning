@@ -29,22 +29,6 @@ def url_for_revision(package, version=None, **kwargs):
         return toolkit.url_for(**kwargs)
 
 
-def url_for_resource_version(package, version, **kwargs):
-    """Similar to `url_for_revision`, but also adds an "@revision" to the
-    resource_id if it and a version is provided
-
-    :param package:
-    :param version:
-    :param kwargs:
-    :return:
-    """
-    if version and 'resource_id' in kwargs:
-        kwargs['resource_id'] = "@".join([kwargs['resource_id'],
-                                          version['package_revision_id']])
-
-    return url_for_revision(package, version, **kwargs)
-
-
 def has_link_resources(package):
     """Return True if any resource in the dataset is a link to an external
     resource.
@@ -107,6 +91,13 @@ def get_dataset_revision_list(dataset_name):
     backend = get_metastore_backend()
 
     return [rev.revision for rev in backend.revision_list(dataset_name)]
+
+
+def find_resource_in_package(package_dict, resource_id):
+    """Find resource in package dict
+    """
+    resources = package_dict.get('resources', [])
+    return next((r for r in resources if r['id'] == resource_id), None)
 
 
 def get_dataset_current_revision(dataset_name):

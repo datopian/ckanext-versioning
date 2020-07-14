@@ -260,29 +260,26 @@ def resource_show_revision(context, data_dict):
     """Show a resource from a specified revision
 
     Takes the same arguments as 'resource_show' but with an additional
-    revision ID parameter
-
-    Revision ID can also be specified as part of the package ID, as
-    <resource_id>@<revision_id>.
+    revision_ref parameter
 
     :param id: the id of the resource
     :type id: string
-    :param revision_id: the ID of the revision
-    :type revision_id: string
+    :param revision_ref: the ID of the revision or tag name
+    :type revision_ref: string
     :returns: A resource dict
     :rtype: dict
     """
-    dd = data_dict.copy()
-    if data_dict.get('revision_id') is None and '@' in data_dict['id']:
-        resource_id, revision_id = data_dict['id'].split('@', 1)
-        dd.update({'id': resource_id})
-        rsc = _get_resource_in_revision(context, dd, revision_id)
-    else:
-        rsc = core_resource_show(context, data_dict)
-        if 'revision_id' in context:
-            rsc = _fix_resource_data(rsc, context['revision_id'])
+    revision_ref = data_dict.get('revision_ref')
+    if revision_ref is None:
+        return core_resource_show(context, data_dict)
 
-    return rsc
+    resource_id = toolkit.get_or_bust(data_dict, 'resource_id')
+    package = _get_package_in_revision(context, data_dict, revision_ref)
+    resource = h.find_resource_in_package(package, resource_id)
+    if resource is None:
+        raise toolkit.ObjectNotFound("Resource not found for dataset revision")
+
+    return resource
 
 
 @toolkit.side_effect_free

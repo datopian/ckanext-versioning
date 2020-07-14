@@ -2,7 +2,8 @@
 
 {# Had to override the entire snippet as it is not devided to any meaningful blocks #}
 
-{% set view_url = h.url_for_revision(package, resource_id=resource['id'], view_id=resource_view['id'], qualified=True, route_name='resource_view', version=c.current_version) %}
+{% set view_url = h.url_for_revision(package, id=resource['package_id'], resource_id=resource['id'],
+    view_id=resource_view['id'], qualified=True, route_name='resource_view', version=c.current_version) %}
 
 {% block resource_view %}
   <div id="view-{{ resource_view['id'] }}" class="resource-view" data-id="{{ resource_view['id'] }}" data-title="{{ resource_view['title'] }}" data-description="{{ resource_view['descripion'] }}">
@@ -47,7 +48,7 @@
           </p>
         </div>
         {% if not to_preview %}
-          {% set current_filters = request.str_GET.get('filters') %}
+          {% set current_filters = request.args.get('filters') %}
           {% if current_filters %}
             {% set src = h.url_for_revision(package, version=c.current_version,
                                            qualified=true, controller='package',
