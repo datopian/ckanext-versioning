@@ -84,9 +84,6 @@ setup(
         'ckan.plugins': [
             'package_versioning = ckanext.versioning.plugin:PackageVersioningPlugin',
         ],
-        'paste.paster_command': [
-            'versioning = ckanext.versioning.commands:VersioningCommand'
-        ],
         'babel.extractors': [
             'ckan = ckan.lib.extract:extract_ckan'
         ]
