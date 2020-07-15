@@ -48,7 +48,9 @@ CKAN_CONFIG_VALUES := \
 		ckan.datastore.read_url=postgresql://$(DATASTORE_DB_RO_USER):$(DATASTORE_DB_RO_PASSWORD)@localhost/$(DATASTORE_DB_NAME) \
 		ckan.plugins='$(CKAN_LOAD_PLUGINS)' \
 		ckan.storage_path='%(here)s/storage' \
-		solr_url=http://127.0.0.1:8983/solr/ckan
+		solr_url=http://127.0.0.1:8983/solr/ckan \
+		ckanext.versioning.backend_type=filesystem \
+		ckanext.versioning.backend_config='{"uri":"./metastore"}'
 
 CKAN_TEST_CONFIG_VALUES := \
 		sqlalchemy.url=postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost/$(POSTGRES_DB)_test \
@@ -141,7 +143,7 @@ docker-remove: .env
 .PHONY: docker-remove
 
 ## Initialize the development environment
-dev-setup: _check_virtualenv $(SENTINELS)/ckan-installed $(CKAN_PATH)/who.ini $(CKAN_CONFIG_FILE) $(SENTINELS)/develop
+dev-setup: metastore $(SENTINELS)/ckan-installed $(CKAN_PATH)/who.ini $(CKAN_CONFIG_FILE) $(SENTINELS)/develop | _check_virtualenv
 .PHONY: dev-setup
 
 ## Start a full development environment
@@ -149,6 +151,9 @@ dev-start: dev-setup docker-up ckan-start
 .PHONY: dev-start
 
 # Private targets
+
+metastore:
+	mkdir -p $@
 
 _check_virtualenv:
 	@if [ -z "$(VIRTUAL_ENV)" ]; then \

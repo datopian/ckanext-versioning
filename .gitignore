@@ -50,3 +50,4 @@ docs/_build/
 /ckan
 /.make-status
 /.python-version
+/metastore
