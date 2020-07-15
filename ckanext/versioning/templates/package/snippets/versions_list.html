@@ -35,7 +35,7 @@
               {{ version.description }}
             </td>
             <td class="dataset-details">
-              {{h.render_datetime(version.created.split('+')[0], with_hours=True)}}
+              {{h.render_datetime(version.created, with_hours=True)}}
             </td>
           </tr>
         {% endfor %}
