@@ -311,7 +311,6 @@ def _get_package_in_revision(context, data_dict, revision_id):
         result = update_ckan_dict(result, dataset)
         for resource in result.get('resources', []):
             resource['datastore_active'] = False
-            _fix_resource_data(resource, revision_id)
 
     # Fetching the license_url, title from the license registry and validate
     if 'license_id' in result and result['license_id']:
@@ -330,7 +329,6 @@ def _get_resource_in_revision(context, data_dict, revision_id):
     context['revision_id'] = revision_id
     result = core_resource_show(context, data_dict)
     result['datastore_active'] = False
-    _fix_resource_data(result, revision_id)
 
     if current_revision_id:
         context['revision_id'] = current_revision_id
@@ -338,27 +336,6 @@ def _get_resource_in_revision(context, data_dict, revision_id):
         del context['revision_id']
 
     return result
-
-
-def _fix_resource_data(resource_dict, revision_id):
-    """Make some adjustments to the resource dict if we are showing a revision
-    of a package
-    """
-    url = resource_dict.get('url')
-    if url and resource_dict.get('url_type') == 'upload' and '://' in url:
-        # Resource is pointing at a local uploaded file, which has already been
-        # converted to an absolute URL by `model_dictize.resource_dictized`
-        if resource_dict['id'] in url:
-            rsc_id = '{}@{}'.format(resource_dict['id'], revision_id)
-            url = url.replace(resource_dict['id'], rsc_id)
-
-        if resource_dict['package_id'] in url:
-            pkg_id = '{}@{}'.format(resource_dict['package_id'], revision_id)
-            url = url.replace(resource_dict['package_id'], pkg_id)
-
-        resource_dict['url'] = url
-
-    return resource_dict
 
 
 @toolkit.side_effect_free
