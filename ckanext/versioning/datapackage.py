@@ -117,6 +117,8 @@ def update_ckan_dict(ckan_dict, dataset):
     ckan_dict.update(dataset)
     if len(ckan_dict.get('extras', [])) > 0:
         ckan_dict['extras'] = _normalize_extras(ckan_dict)
+    for resource in ckan_dict.get('resources'):
+        resource['package_id'] = ckan_dict.get('id')
     return ckan_dict
 
 
