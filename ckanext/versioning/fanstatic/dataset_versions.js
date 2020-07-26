@@ -16,8 +16,8 @@ ckan.module('dataset_version_controls', function ($) {
             this._apiBaseUrl = this.options.apiUrl;
             this._packageId = this.options.packageId;
             this._packageUrl = this.options.packageUrl;
-            this._linkResources = (this.options.linkResources == 'True');
-            this._tag = String(this.options.tag) || null
+            this._linkResources = this.options.linkResources;
+            this._tag = this.options.tag || null;
 
             if(this._linkResources){
                 this.$(".modal-body").append(
