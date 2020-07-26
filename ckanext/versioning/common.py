@@ -1,3 +1,4 @@
+import contextlib
 from ast import literal_eval
 
 from ckan.plugins import toolkit
@@ -48,3 +49,17 @@ def tag_to_dict(tag):
         'author_email': tag.author.email,
         'description': tag.description
     }
+
+
+@contextlib.contextmanager
+def exception_mapper(from_exc, to_exc):
+    """A context manager that maps ``from_exc`` exceptions to ``to_exc``.
+
+    This is highly useful if all you want is to catch exceptions thrown by an
+    lower-level library and map them into higher level exceptions with specific
+    semantics.
+    """
+    try:
+        yield
+    except from_exc as e:
+        raise to_exc(e)

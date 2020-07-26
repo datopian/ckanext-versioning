@@ -10,7 +10,7 @@ from ckan.logic.action.get import resource_show as core_resource_show
 from ckan.plugins import toolkit
 from metastore.backend import exc
 
-from ckanext.versioning.common import create_author_from_context, get_metastore_backend, tag_to_dict
+from ckanext.versioning.common import create_author_from_context, exception_mapper, get_metastore_backend, tag_to_dict
 from ckanext.versioning.datapackage import frictionless_to_dataset, update_ckan_dict
 from ckanext.versioning.logic import helpers as h
 
@@ -155,7 +155,8 @@ def dataset_tag_list(context, data_dict):
 
     backend = get_metastore_backend()
 
-    tag_list = backend.tag_list(dataset.name)
+    with exception_mapper(exc.NotFound, toolkit.ObjectNotFound):
+        tag_list = backend.tag_list(dataset.name)
 
     return [tag_to_dict(t) for t in tag_list]
 
@@ -173,10 +174,8 @@ def dataset_tag_show(context, data_dict):
     """
     dataset_name, tag = toolkit.get_or_bust(data_dict, ['dataset', 'tag'])
     backend = get_metastore_backend()
-    try:
+    with exception_mapper(exc.NotFound, toolkit.ObjectNotFound):
         tag_info = backend.tag_fetch(dataset_name, tag)
-    except exc.NotFound:
-        raise toolkit.ObjectNotFound('Dataset version not found.')
 
     return tag_to_dict(tag_info)
 
