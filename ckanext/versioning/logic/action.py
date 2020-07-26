@@ -10,8 +10,7 @@ from ckan.logic.action.get import resource_show as core_resource_show
 from ckan.plugins import toolkit
 from metastore.backend import exc
 
-from ckanext.versioning.common import (create_author_from_context, exception_mapper,
-                                       get_metastore_backend, tag_to_dict)
+from ckanext.versioning.common import create_author_from_context, exception_mapper, get_metastore_backend, tag_to_dict
 from ckanext.versioning.datapackage import frictionless_to_dataset, update_ckan_dict
 from ckanext.versioning.logic import helpers as h
 
