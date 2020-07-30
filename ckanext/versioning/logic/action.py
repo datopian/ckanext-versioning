@@ -9,6 +9,7 @@ from ckan.logic.action.get import package_show as core_package_show
 from ckan.logic.action.get import resource_show as core_resource_show
 from ckan.plugins import toolkit
 from metastore.backend import exc
+from six.moves.urllib import parse
 
 from ckanext.versioning.common import create_author_from_context, exception_mapper, get_metastore_backend, tag_to_dict
 from ckanext.versioning.datapackage import frictionless_to_dataset, update_ckan_dict
@@ -347,15 +348,11 @@ def _fix_resource_data(resource_dict, revision_id):
     if url and resource_dict.get('url_type') == 'upload' and '://' in url:
         # Resource is pointing at a local uploaded file, which has already been
         # converted to an absolute URL by `model_dictize.resource_dictized`
-        if resource_dict['id'] in url:
-            rsc_id = '{}@{}'.format(resource_dict['id'], revision_id)
-            url = url.replace(resource_dict['id'], rsc_id)
-
-        if resource_dict['package_id'] in url:
-            pkg_id = '{}@{}'.format(resource_dict['package_id'], revision_id)
-            url = url.replace(resource_dict['package_id'], pkg_id)
-
-        resource_dict['url'] = url
+        parts = list(parse.urlsplit(url))
+        parts[3] = '{}{}revision_ref={}'.format(parts[3],
+                                                '&' if parts[3] else '',
+                                                revision_id)
+        resource_dict['url'] = parse.urlunsplit(parts)
 
     return resource_dict
 
