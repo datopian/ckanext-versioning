@@ -325,7 +325,7 @@ class TestVersionsActions(MetastoreBackendTestBase):
             diff['diff']
         )
 
-        # TODO: This test fails due to bad logic in the convertor
+        # TODO: This test fails due to bad logic in the converter
         # assert_in(
         #     '\n-  "license_id": null, '
         #     '\n+  "license_id": "odc-pddl", '
@@ -519,6 +519,12 @@ class TestPackageShowRevision(MetastoreBackendTestBase):
         )
 
         self.dataset = factories.Dataset()
+        self.uploaded_resource = factories.Resource(
+            package_id=self.dataset['id'],
+            url_type='upload',
+            url='my-resource.csv'
+        )
+        self.url_resource = factories.Resource(package_id=self.dataset['id'])
 
     def test_package_show_revision_gets_current_if_no_revision_id(self):
         context = self._get_context(self.org_admin)
@@ -563,3 +569,88 @@ class TestPackageShowRevision(MetastoreBackendTestBase):
             )
 
         assert_equals(initial_dataset['title'], 'Test Dataset')
+
+    def test_package_show_revision_has_download_url(self):
+        context = self._get_context(self.org_admin)
+        initial_revision = helpers.get_dataset_current_revision(
+            self.dataset['name']
+            )
+
+        test_helpers.call_action(
+            'package_update',
+            context,
+            name=self.dataset['name'],
+            title='New Title',
+            notes='New Notes'
+        )
+
+        initial_dataset = test_helpers.call_action(
+            'package_show',
+            context,
+            id=self.dataset['id'],
+            revision_ref=initial_revision
+            )
+
+        expected = ('http://localhost:5000/dataset/{dataset_id}/resource/'
+                    '{resource_id}/download/{filename}?revision_ref={revision_ref}') \
+            .format(dataset_id=self.dataset['id'],
+                    resource_id=self.uploaded_resource['id'],
+                    filename='my-resource.csv',
+                    revision_ref=initial_revision)
+
+        assert_equals(initial_dataset['resources'][0]['url'], expected)
+
+    def test_resource_show_revision_has_download_url(self):
+        context = self._get_context(self.org_admin)
+        initial_revision = helpers.get_dataset_current_revision(
+            self.dataset['name']
+            )
+
+        test_helpers.call_action(
+            'package_update',
+            context,
+            name=self.dataset['name'],
+            title='New Title',
+            notes='New Notes'
+        )
+
+        initial_resource = test_helpers.call_action(
+            'resource_show',
+            context,
+            id=self.dataset['id'],
+            resource_id=self.uploaded_resource['id'],
+            revision_ref=initial_revision
+        )
+
+        expected = ('http://localhost:5000/dataset/{dataset_id}/resource/'
+                    '{resource_id}/download/{filename}?revision_ref={revision_ref}')\
+            .format(dataset_id=self.dataset['id'],
+                    resource_id=self.uploaded_resource['id'],
+                    filename='my-resource.csv',
+                    revision_ref=initial_revision)
+
+        assert_equals(initial_resource['url'], expected)
+
+    def test_resource_show_revision_external_url_is_unchanged(self):
+        context = self._get_context(self.org_admin)
+        initial_revision = helpers.get_dataset_current_revision(
+            self.dataset['name']
+            )
+
+        test_helpers.call_action(
+            'package_update',
+            context,
+            name=self.dataset['name'],
+            title='New Title',
+            notes='New Notes'
+        )
+
+        initial_resource = test_helpers.call_action(
+            'resource_show',
+            context,
+            id=self.dataset['id'],
+            resource_id=self.url_resource['id'],
+            revision_ref=initial_revision
+        )
+
+        assert_equals(initial_resource['url'], 'http://link.to.some.data')
