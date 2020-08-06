@@ -150,6 +150,17 @@ dev-setup: metastore $(SENTINELS)/ckan-installed $(CKAN_PATH)/who.ini $(CKAN_CON
 dev-start: dev-setup docker-up ckan-start
 .PHONY: dev-start
 
+## Add test users
+add-users: | _check_virtualenv
+	$(PASTER) --plugin=ckan user add admin password=12345678 email=admin@admin.org -c $(CKAN_CONFIG_FILE)
+	$(PASTER) --plugin=ckan sysadmin add admin -c $(CKAN_CONFIG_FILE)
+
+## Create a git tag for the current version
+version-tag: | _check_virtualenv
+	$(GIT) tag v`$(PYTHON) -c 'import $(PACKAGE_NAME); print($(PACKAGE_NAME).__version__);'`
+	$(GIT) push --tags
+ .PHONY: version-tag
+
 # Private targets
 
 metastore:
@@ -225,11 +236,6 @@ $(SENTINELS)/tests-passed: $(SENTINELS)/test-setup $(shell find $(PACKAGE_DIR) -
           --with-doctest \
 		  $(COVERAGE_ARG) $(TEST_EXTRA_ARGS) $(PACKAGE_DIR)/tests/$(TEST_PATH)
 	@touch $@
-
-## Add test users
-add-users: | _check_virtualenv
-	$(PASTER) --plugin=ckan user add admin password=12345678 email=admin@admin.org -c $(CKAN_CONFIG_FILE)
-	$(PASTER) --plugin=ckan sysadmin add admin -c $(CKAN_CONFIG_FILE)
 
 # Help related variables and targets
 
