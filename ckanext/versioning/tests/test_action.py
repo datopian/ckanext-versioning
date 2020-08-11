@@ -337,13 +337,13 @@ class TestVersionsActions(MetastoreBackendTestBase):
         # )
 
 
-class TestVersionsPromote(MetastoreBackendTestBase):
-    """Test cases for promoting a dataset version to latest
+class TestVersionsRevert(MetastoreBackendTestBase):
+    """Test cases for reverting a dataset to a revision / tag
     """
 
     def setup(self):
 
-        super(TestVersionsPromote, self).setup()
+        super(TestVersionsRevert, self).setup()
 
         self.org_admin = factories.User()
         self.org_admin_name = self.org_admin['name'].encode('ascii')
@@ -360,11 +360,11 @@ class TestVersionsPromote(MetastoreBackendTestBase):
 
         self.dataset = factories.Dataset()
 
-    def test_promote_version_updates_metadata_fields(self):
+    def test_revert_updates_metadata_fields(self):
         context = self._get_context(self.org_admin)
 
         initial_dataset = factories.Dataset(
-            title='Testing Promote',
+            title='Testing Revert',
             notes='Initial Description',
             maintainer='test_maintainer',
             maintainer_email='test_email@example.com',
@@ -394,24 +394,23 @@ class TestVersionsPromote(MetastoreBackendTestBase):
         )
 
         test_helpers.call_action(
-            'dataset_tag_promote',
+            'dataset_revert',
             context,
-            tag=version['name'],
+            revision_ref=version['name'],
             dataset=version['package_id']
             )
 
-        promoted_dataset = test_helpers.call_action(
+        reverted = test_helpers.call_action(
             'package_show',
             context,
             id=initial_dataset['id']
             )
 
-        assert_equals(promoted_dataset['title'], 'Testing Promote')
-        assert_equals(promoted_dataset['notes'], 'Initial Description')
-        assert_equals(promoted_dataset['maintainer'], 'test_maintainer')
-        assert_equals(
-            promoted_dataset['maintainer_email'], 'test_email@example.com')
-        assert_equals(promoted_dataset['owner_org'], self.org['id'])
+        assert_equals(reverted['title'], 'Testing Revert')
+        assert_equals(reverted['notes'], 'Initial Description')
+        assert_equals(reverted['maintainer'], 'test_maintainer')
+        assert_equals(reverted['maintainer_email'], 'test_email@example.com')
+        assert_equals(reverted['owner_org'], self.org['id'])
 
     # TODO: Fix this test when the convert logic is ok
     # def test_promote_version_updates_extras(self):
@@ -456,7 +455,7 @@ class TestVersionsPromote(MetastoreBackendTestBase):
     #         '"original value"')
     #     assert_equals(len(promoted_dataset['extras']), 1)
 
-    def test_promote_version_updates_resources(self):
+    def test_revert_updates_resources(self):
         context = self._get_context(self.org_admin)
 
         initial_dataset = factories.Dataset()
@@ -480,21 +479,21 @@ class TestVersionsPromote(MetastoreBackendTestBase):
         initial_dataset['resources'].append(second_resource)
 
         test_helpers.call_action(
-            'dataset_tag_promote',
+            'dataset_revert',
             context,
-            tag=version['name'],
+            revision_ref=version['name'],
             dataset=version['package_id']
             )
 
-        promoted_dataset = test_helpers.call_action(
+        reverted_dataset = test_helpers.call_action(
             'package_show',
             context,
             id=initial_dataset['id']
             )
 
-        assert_equals(len(promoted_dataset['resources']), 1)
+        assert_equals(len(reverted_dataset['resources']), 1)
         assert_equals(
-            promoted_dataset['resources'][0]['name'],
+            reverted_dataset['resources'][0]['name'],
             'First Resource')
 
 
