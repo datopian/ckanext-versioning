@@ -33,14 +33,14 @@ ckan.module('dataset_version_controls', function ($) {
             this.$('.delete-version-btn').on('click', this._onDelete);
             this.$('.create-version-form').on('submit', this._onCreate);
             this.$('.update-version-form').on('submit', this._onUpdate);
-            this.$('.promote-version-btn').on('click', this._onPromote);
+            this.$('.revert-to-btn').on('click', this._onRevert);
         },
 
         _onDelete: function (evt)
         {
             let dataset = $(evt.target).data('dataset');
             let tag = $(evt.target).data('version-id');
-            tag = String(tag)
+            tag = String(tag);
 
             if (confirm("Are you sure you want to delete the version \"" + tag + "\" of this dataset?")) {
                 return this._delete(tag, dataset);
@@ -64,15 +64,16 @@ ckan.module('dataset_version_controls', function ($) {
             return this._update(this._packageId, this._tag, tagName, description);
         },
 
-        _onPromote: function(evt)
+        _onRevert: function(evt)
         {
             let dataset = $(evt.target).data('dataset');
-            let tag = $(evt.target).data('version-id');
-            tag = String(tag)
+            let revision_ref = $(evt.target).data('version-id');
+            revision_ref = String(revision_ref);
 
-
-            if (confirm("Are you sure you want to promote version \"" + tag + "\" to be the current version of the dataset? \n\nNote that when doing this the current state will be lost. If you want to preserve it please cancel and create a Version for it first.")) {
-                return this._promote(tag, dataset);
+            if (confirm(
+                "Are you sure you want to revert this dataset to the older tag \"" + revision_ref + "\"?\n\n" +
+                "Note that when doing this the current state will be lost. If you want to preserve it, please cancel and create a tag for it first.")) {
+                return this._revert(revision_ref, dataset);
             }
         },
 
@@ -142,17 +143,17 @@ ckan.module('dataset_version_controls', function ($) {
                 });
         },
 
-        _promote: function (tag, dataset) {
-            const action = 'dataset_tag_promote';
+        _revert: function (revision_ref, dataset) {
+            const action = 'dataset_revert';
             let params = {
-                tag: tag,
+                revision_ref: revision_ref,
                 dataset: dataset
             };
             let that = this;
             this._apiPost(action, params)
                 .then(function (response) {
                     if (response.status !== 200) {
-                        that._show_error_message(response, 'promoting')
+                        that._show_error_message(response, 'reverting')
                     } else {
                         location.href = this._packageUrl;
                     }
