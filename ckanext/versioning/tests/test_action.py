@@ -412,6 +412,56 @@ class TestVersionsRevert(MetastoreBackendTestBase):
         assert_equals(reverted['maintainer_email'], 'test_email@example.com')
         assert_equals(reverted['owner_org'], self.org['id'])
 
+    def test_revert_to_revision_id(self):
+        context = self._get_context(self.org_admin)
+
+        initial_dataset = factories.Dataset(
+            title='Testing Revert',
+            notes='Initial Description',
+            maintainer='test_maintainer',
+            maintainer_email='test_email@example.com',
+            owner_org=self.org['id']
+        )
+
+        # TODO: For now we use `tag_create` and `tag_list` to get revision IDs
+        # TODO: There is no API to list revisions without tagging
+        # TODO: see https://github.com/datopian/ckanext-versioning/issues/47
+
+        test_helpers.call_action(
+            'dataset_tag_create',
+            context,
+            dataset=initial_dataset['id'],
+            name="1.2")
+
+        tags = test_helpers.call_action(
+            'dataset_tag_list',
+            context,
+            dataset=initial_dataset['id'])
+
+        test_helpers.call_action(
+            'package_update',
+            context,
+            name=initial_dataset['name'],
+            title='New Title',
+            notes='New Notes')
+
+        test_helpers.call_action(
+            'dataset_revert',
+            context,
+            revision_ref=tags[0]['revision_ref'],
+            dataset=initial_dataset['id'])
+
+        reverted = test_helpers.call_action(
+            'package_show',
+            context,
+            id=initial_dataset['id'])
+
+        assert_equals(reverted['title'], 'Testing Revert')
+        assert_equals(reverted['notes'], 'Initial Description')
+        assert_equals(reverted['maintainer'], 'test_maintainer')
+        assert_equals(reverted['maintainer_email'], 'test_email@example.com')
+        assert_equals(reverted['owner_org'], self.org['id'])
+
     # TODO: Fix this test when the convert logic is ok
     # def test_promote_version_updates_extras(self):
     #     context = self._get_context(self.org_admin)
