@@ -1,3 +1,5 @@
+import json
+
 from ckan import model
 from ckan.plugins import toolkit
 
@@ -108,3 +110,14 @@ def get_dataset_current_revision(dataset_name):
     backend = get_metastore_backend()
 
     return backend.fetch(dataset_name).revision
+
+
+def tojson(obj):
+    '''Convert an object to a JSON string
+
+    NOTE: this is identical to the built-in Jinja2 `|tojson` filter. Unfortunately,
+    current versions of CKAN force usage of Jinja2 2.8 which doesn't have this filter.
+    Once CKAN can be used with Jinja2 2.9 and higher, all usages of this filter can
+    be replaced with |tojson and this can be removed.
+    '''
+    return json.dumps(obj)
