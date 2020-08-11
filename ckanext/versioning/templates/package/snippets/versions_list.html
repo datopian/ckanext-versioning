@@ -49,23 +49,34 @@
   {% if c.current_version %}
     {% if h.check_access('dataset_tag_delete', {'dataset': pkg.id}) %}
       <button data-version-id="{{ c.current_version.name }}"
-      data-dataset="{{ c.current_version.package_id }}"
+              data-dataset="{{ c.current_version.package_id }}"
               class="delete-version-btn btn btn-danger">
+        <i class="fa fa-trash"></i>
         {{ _('Delete Version') }}
       </button>
     {% endif %}
 
-    {% if h.check_access('dataset_tag_create', {'dataset': pkg.id}) %}
-    <button data-version-id="{{ c.current_version.name }}"
-            data-dataset="{{ c.current_version.package_id }}"
-            class="promote-version-btn btn btn-primary pull-right">
-        {{ _('Promote Version') }}
-    </button>
-    <button type="button" class="btn btn-primary pull-right" data-toggle="modal" data-target="#updateVersionModal">
-      {{ _('Edit Version Info') }}
-    </button>
-    {% snippet 'package/snippets/update_version.html' %}
-    {% endif %}
+    <div class="btn-toolbar pull-right">
+      {% if h.check_access('dataset_tag_create', {'dataset': pkg.id}) %}
+      <div class="btn-group">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#updateVersionModal">
+          <i class="fa fa-edit"></i>
+          {{ _('Edit Version Info') }}
+        </button>
+      </div>
+      {% snippet 'package/snippets/update_version.html' %}
+      {% endif %}
+      {% if h.check_access('dataset_revert', {'dataset': pkg.id}) %}
+      <div class="btn-group">
+        <button data-version-id="{{ c.current_version.name }}"
+                data-dataset="{{ c.current_version.package_id }}"
+                class="revert-to-btn btn btn-primary btn-primary-">
+          <i class="fa fa-undo"></i>
+          {{ _('Revert to this Version') }}
+        </button>
+      </div>
+      {% endif %}
+    </div>
 
   {% elif not c.revision_date %}
     {% if h.check_access('dataset_tag_create', {'dataset': pkg.id}) %}

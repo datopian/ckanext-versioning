@@ -3,6 +3,15 @@ from ckan.authz import is_authorized
 from ckan.plugins import toolkit
 
 
+def dataset_revert(context, data_dict):
+    """Check if a user is allowed to revert a dataset to a version
+
+    This is permitted only to users who are allowed to modify the dataset
+    """
+    return is_authorized('package_update', context,
+                         {"id": data_dict['dataset']})
+
+
 def dataset_tag_create(context, data_dict):
     """Check if a user is allowed to create a version
 
