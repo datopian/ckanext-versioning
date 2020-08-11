@@ -462,48 +462,43 @@ class TestVersionsRevert(MetastoreBackendTestBase):
         assert_equals(reverted['maintainer_email'], 'test_email@example.com')
         assert_equals(reverted['owner_org'], self.org['id'])
 
-    # TODO: Fix this test when the convert logic is ok
-    # def test_promote_version_updates_extras(self):
-    #     context = self._get_context(self.org_admin)
+    def test_revert_updates_extras(self):
+        context = self._get_context(self.org_admin)
 
-    #     initial_dataset = factories.Dataset(
-    #         extras=[{'key': u'original extra',
-    #                  'value': u'"original value"'}])
+        initial_dataset = factories.Dataset(
+            extras=[{'key': u'original extra',
+                     'value': u'original value'}])
 
-    #     version = test_helpers.call_action(
-    #         'dataset_tag_create',
-    #         context,
-    #         dataset=initial_dataset['id'],
-    #         name="1.2")
+        tag = test_helpers.call_action(
+            'dataset_tag_create',
+            context,
+            dataset=initial_dataset['id'],
+            name="1.2")
 
-    #     test_helpers.call_action(
-    #         'package_update',
-    #         name=initial_dataset['name'],
-    #         extras=[
-    #             {'key': u'new extra', 'value': u'"new value"'},
-    #             {'key': u'new extra 2', 'value': u'"new value 2"'}
-    #             ],
-    #     )
+        test_helpers.call_action(
+            'package_update',
+            name=initial_dataset['name'],
+            extras=[
+                {'key': u'new extra', 'value': u'new value'},
+                {'key': u'new extra 2', 'value': u'new value 2'}
+            ],
+        )
 
-    #     test_helpers.call_action(
-    #         'dataset_tag_promote',
-    #         context,
-    #         version=version['id']
-    #         )
+        test_helpers.call_action(
+            'dataset_revert',
+            context,
+            dataset=initial_dataset['id'],
+            revision_ref=tag['name'])
 
-    #     promoted_dataset = test_helpers.call_action(
-    #         'package_show',
-    #         context,
-    #         id=initial_dataset['id']
-    #         )
+        reverted_dataset = test_helpers.call_action(
+            'package_show',
+            context,
+            id=initial_dataset['id'])
 
-    #     assert_equals(
-    #         promoted_dataset['extras'][0]['key'],
-    #         'original extra')
-    #     assert_equals(
-    #         promoted_dataset['extras'][0]['value'],
-    #         '"original value"')
-    #     assert_equals(len(promoted_dataset['extras']), 1)
+        assert_equals(reverted_dataset['extras'][0]['key'], 'original extra')
+        assert_equals(reverted_dataset['extras'][0]['value'],
+                      'original value')
+        assert_equals(len(reverted_dataset['extras']), 1)
 
     def test_revert_updates_resources(self):
         context = self._get_context(self.org_admin)
