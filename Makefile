@@ -29,7 +29,7 @@ PYTHON_VERSION := $(shell $(PYTHON) -c 'import sys; print(sys.version_info[0])')
 # CKAN environment variables
 CKAN_PATH := ckan
 CKAN_REPO_URL := https://github.com/ckan/ckan.git
-CKAN_VERSION := ckan-2.8.3
+CKAN_VERSION := ckan-2.8.4
 CKAN_CONFIG_FILE := $(CKAN_PATH)/development.ini
 CKAN_SITE_URL := http://localhost:5000
 POSTGRES_USER := ckan
