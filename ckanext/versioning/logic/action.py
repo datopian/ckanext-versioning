@@ -89,8 +89,8 @@ def dataset_tag_create(context, data_dict):
                 'id': dataset_id_or_name,
                 'include_tracking': True
                 })
-    datapackage = dataset_to_frictionless(pkg_dict)
-    current_revision = backend.update(dataset.name,datapackage,author)
+    data_package = dataset_to_frictionless(pkg_dict)
+    current_revision = backend.update(dataset.name, data_package, author)
     try:
         tag_info = backend.tag_create(
                 dataset.name,
