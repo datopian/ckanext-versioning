@@ -12,7 +12,7 @@ from metastore.backend import exc
 from six.moves.urllib import parse
 
 from ckanext.versioning.common import create_author_from_context, exception_mapper, get_metastore_backend, tag_to_dict
-from ckanext.versioning.datapackage import frictionless_to_dataset, update_ckan_dict
+from ckanext.versioning.datapackage import frictionless_to_dataset, update_ckan_dict, dataset_to_frictionless
 from ckanext.versioning.logic import helpers as h
 
 log = logging.getLogger(__name__)
@@ -85,7 +85,12 @@ def dataset_tag_create(context, data_dict):
     # TODO: Names like 'Version 1.2' are not allowed as Github tags
     backend = get_metastore_backend()
     author = create_author_from_context(context)
-    current_revision = backend.fetch(dataset.name)
+    pkg_dict = toolkit.get_action('package_show')({}, {
+                'id': dataset_id_or_name,
+                'include_tracking': True
+                })
+    datapackage = dataset_to_frictionless(pkg_dict)
+    current_revision = backend.update(dataset.name,datapackage,author)
     try:
         tag_info = backend.tag_create(
                 dataset.name,
