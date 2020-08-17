@@ -20,6 +20,7 @@ def url_for_revision(package, version=None, **kwargs):
     """
     if version:
         kwargs['revision_ref'] = version['revision_ref']
+        kwargs['tag_name'] = version['name']
     kwargs['package_id'] = package.get('name', package['id'])
 
     if 'route_name' in kwargs:
