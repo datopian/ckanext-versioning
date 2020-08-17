@@ -5,6 +5,8 @@ from os import path
 from setuptools import (  # Always prefer setuptools over distutils
     find_packages, setup)
 
+import ckanext.versioning
+
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
@@ -17,7 +19,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # http://packaging.python.org/en/latest/tutorial.html#version
-    version='0.0.1',
+    version=ckanext.versioning.__version__,
 
     description='''Create and manage named versions of datasets''',
     long_description=long_description,

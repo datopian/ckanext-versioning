@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 
 def dataset_tag_update(context, data_dict):
-    """Update a version from the current dataset.
+    """Update a tag of the current dataset.
 
     :param dataset: the id or name of the dataset
     :type dataset: string
@@ -50,18 +50,18 @@ def dataset_tag_update(context, data_dict):
                 author=author
                 )
     except exc.NotFound:
-        raise toolkit.ObjectNotFound("Dataset version not found.")
+        raise toolkit.ObjectNotFound("Dataset tag not found.")
 
-    log.info('Version "%s" with id %s edited correctly', name, tag)
+    log.info('Tag "%s" with id %s modified successfully', name, tag)
 
     return tag_to_dict(tag_info)
 
 
 def dataset_tag_create(context, data_dict):
-    """Create a new version from the current dataset's revision
+    """Create a new tag from the current dataset's revision
 
     Currently you must have editor level access on the dataset
-    to create a version.
+    to create a tag.
 
     :param dataset: the id or name of the dataset
     :type dataset: string
@@ -96,47 +96,39 @@ def dataset_tag_create(context, data_dict):
                 )
     except exc.Conflict as e:
         #  Name not unique
-        log.debug("Version name already exists: %s", e)
-        raise toolkit.ValidationError(
-            'Version names must be unique per dataset'
-        )
+        log.debug("Tag already exists: %s", e)
+        raise toolkit.ValidationError('Tag names must be unique per dataset')
 
-    log.info('Version "%s" created for package %s', name, dataset.id)
+    log.info('Tag "%s" created for package %s', name, dataset.id)
 
     return tag_to_dict(tag_info)
 
 
-def dataset_tag_promote(context, data_dict):
-    """ Promotes a dataset version to the current state of the dataset.
+def dataset_revert(context, data_dict):
+    """Reverts a dataset to a specified revision or tag
 
-    param tag: the tag to be promoted
-    type tag: string
-    param dataset: the dataset name to be promoted
+    param dataset: the dataset name or ID to be reverted
     type dataset: string
+    param revision_ref: the tag or revision to revert to
+    type revision_ref: string
     """
-    version = dataset_tag_show(context, data_dict)
+    dataset_id, revision_ref = toolkit.get_or_bust(
+        data_dict, ['dataset', 'revision_ref'])
 
-    if not version:
-        raise toolkit.ObjectNotFound('Version not found')
-
-    data_dict['dataset'] = version['package_id']
-    toolkit.check_access('dataset_tag_create', context, data_dict)
+    toolkit.check_access('dataset_revert', context, data_dict)
     assert context.get('auth_user_obj')  # Should be here after `check_access`
 
     revision_dict = toolkit.get_action('package_show')(context, {
-        'id': version['package_id'],
-        'revision_ref': version['revision_ref']
+        'id': dataset_id,
+        'revision_ref': revision_ref
     })
 
-    promoted_dataset = toolkit.get_action('package_update')(
+    reverted_dataset = toolkit.get_action('package_update')(
         context, revision_dict)
 
-    log.info(
-        'Version "%s" promoted as latest for package %s',
-        version['name'],
-        promoted_dataset['title'])
+    log.info('Package %s reverted to revision %s', dataset_id, revision_ref)
 
-    return promoted_dataset
+    return reverted_dataset
 
 
 @toolkit.side_effect_free
@@ -164,7 +156,7 @@ def dataset_tag_list(context, data_dict):
 
 @toolkit.side_effect_free
 def dataset_tag_show(context, data_dict):
-    """Get a specific version by ID
+    """Get a specific tag by ID
 
     :param dataset: the name of the dataset
     :type dataset: string
@@ -199,8 +191,7 @@ def dataset_tag_delete(context, data_dict):
     except Exception:
         raise toolkit.ObjectNotFound('Dataset version not found')
 
-    log.info('Version %s of dataset %s was deleted',
-             tag, dataset_name)
+    log.info('Tag %s of dataset %s was deleted', tag, dataset_name)
 
 
 @toolkit.side_effect_free

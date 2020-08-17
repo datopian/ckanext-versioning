@@ -38,7 +38,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
             'dataset_tag_list': action.dataset_tag_list,
             'dataset_tag_update': action.dataset_tag_update,
             'dataset_tag_show': action.dataset_tag_show,
-            'dataset_tag_promote': action.dataset_tag_promote,
+            'dataset_revert': action.dataset_revert,
             'package_show_tag': action.package_show_tag,
             'resource_show_tag': action.resource_show_tag,
             'dataset_versions_diff': action.dataset_versions_diff,
@@ -56,6 +56,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
             'dataset_tag_delete': auth.dataset_tag_delete,
             'dataset_tag_list': auth.dataset_tag_list,
             'dataset_tag_show': auth.dataset_tag_show,
+            'dataset_revert': auth.dataset_revert,
             'dataset_versions_diff': auth.dataset_versions_diff,
         }
 
@@ -66,6 +67,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
             'url_for_revision': helpers.url_for_revision,
             'dataset_version_has_link_resources': helpers.has_link_resources,
             'dataset_version_compare_pkg_dicts': helpers.compare_pkg_dicts,
+            'tojson': helpers.tojson,
         }
 
     # IPackageController
