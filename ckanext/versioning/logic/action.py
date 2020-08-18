@@ -10,6 +10,7 @@ from ckan.logic.action.get import resource_show as core_resource_show
 from ckan.plugins import toolkit
 from metastore.backend import exc
 from six.moves.urllib import parse
+from metastore.util import is_hex_str
 
 from ckanext.versioning.common import create_author_from_context, exception_mapper, get_metastore_backend, tag_to_dict
 from ckanext.versioning.datapackage import frictionless_to_dataset, update_ckan_dict
@@ -455,3 +456,8 @@ def _get_dataset_name(id_or_name):
         raise toolkit.ObjectNotFound('Package {} not found'.format(id_or_name))
 
     return dataset.name
+
+def is_valid_revision_id(revision_ref):
+    if is_hex_str(revision_ref, chars=32):
+        return True
+    return False

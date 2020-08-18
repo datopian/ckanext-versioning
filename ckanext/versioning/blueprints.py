@@ -8,13 +8,13 @@ from ckanext.versioning.logic import helpers
 versioning = Blueprint('versioning', __name__)
 
 
-def show(package_id, revision_ref=None, tag_name=None):
+def show(package_id, revision_ref=None):
     pkg_dict = _get_package(package_id, revision_ref)
     toolkit.c.pkg_dict = pkg_dict
     return toolkit.render('package/read.html')
 
 
-def resource_show(package_id, resource_id, revision_ref=None, tag_name=None):
+def resource_show(package_id, resource_id, revision_ref=None):
     """Show a resource of a package, optionally in a given revision / tag
     """
     pkg_dict = _get_package(package_id, revision_ref)
@@ -106,9 +106,9 @@ def changes(id):
 
 versioning.add_url_rule('/dataset/<id>/version/changes', view_func=changes)
 versioning.add_url_rule('/dataset/<package_id>/show', view_func=show)
-versioning.add_url_rule('/dataset/<package_id>/show/<revision_ref>/<tag_name>', view_func=show)
+versioning.add_url_rule('/dataset/<package_id>/show/<revision_ref>', view_func=show)
 versioning.add_url_rule('/dataset/<package_id>/resource/<resource_id>', view_func=resource_show)
-versioning.add_url_rule('/dataset/<package_id>/show/<revision_ref>/<resource_id>/<tag_name>', view_func=resource_show)
+versioning.add_url_rule('/dataset/<package_id>/show/<revision_ref>/<resource_id>', view_func=resource_show)
 
 
 def _get_package(package_id, revision_ref=None):
