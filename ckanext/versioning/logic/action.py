@@ -457,6 +457,7 @@ def _get_dataset_name(id_or_name):
 
     return dataset.name
 
+
 def is_valid_revision_id(revision_ref):
     if is_hex_str(revision_ref, chars=32):
         return True
