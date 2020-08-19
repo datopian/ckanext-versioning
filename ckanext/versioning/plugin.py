@@ -95,8 +95,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
             tag_list = action.dataset_tag_list({}, {
                 'dataset': pkg_dict['name']
             })
-
-            if action.is_valid_revision_id(revision_ref):
+            if get_metastore_backend().is_valid_revision_id(revision_ref):
                 revision = filter(lambda d: d['revision_ref'] == revision_ref, tag_list)[0]
             else:
                 revision = filter(lambda d: d['name'] == revision_ref, tag_list)[0]
