@@ -1,5 +1,5 @@
 ckan-datapackage-tools==0.1.0
-metastore-lib==0.1.4
+metastore-lib==0.2.0
 python-dateutil==2.8.1
 datapackage
 frictionless-ckan-mapper==1.0.4
