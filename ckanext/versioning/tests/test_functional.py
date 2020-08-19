@@ -65,6 +65,36 @@ class TestPackageShow(MetastoreBackendTestBase):
 
         assert_in(original_notes, res.ubody)
 
+    def test_package_show_renders_tag(self):
+        app = self._get_test_app()
+        context = self._get_context(self.user)
+
+        tag = test_helpers.call_action(
+            'dataset_tag_create',
+            context,
+            dataset=self.dataset['id'],
+            name="0.1.2",
+            description="The best dataset ever, it **rules!**")
+
+        original_notes = self.dataset['notes']
+
+        test_helpers.call_action(
+            'package_patch',
+            context,
+            id=self.dataset['id'],
+            notes='Some changed notes',
+        )
+
+        url = toolkit.url_for(
+            'versioning.show',
+            package_id=self.dataset['id'],
+            revision_ref=tag['name'])
+
+        environ = {'REMOTE_USER': self.user_name}
+        res = app.get(url, extra_environ=environ)
+
+        assert_in(original_notes, res.ubody)
+
     def test_package_show_renders_alert_info(self):
         app = self._get_test_app()
         context = self._get_context(self.user)
@@ -86,7 +116,6 @@ class TestPackageShow(MetastoreBackendTestBase):
         url = toolkit.url_for(
             'versioning.show',
             package_id=self.dataset['id'],
-
             revision_ref=tag['revision_ref'])
 
         environ = {'REMOTE_USER': self.user_name}
