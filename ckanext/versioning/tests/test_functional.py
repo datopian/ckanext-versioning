@@ -64,7 +64,7 @@ class TestPackageShow(MetastoreBackendTestBase):
         res = app.get(url, extra_environ=environ)
 
         assert_in(original_notes, res.ubody)
-    
+
     def test_package_show_renders_tag(self):
         app = self._get_test_app()
         context = self._get_context(self.user)
