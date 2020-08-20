@@ -209,7 +209,7 @@ def package_show_revision(context, data_dict):
     :returns: A package dict
     :rtype: dict
     """
-    revision_ref = data_dict.get('revision_ref', request.params.get('revision_ref'))
+    revision_ref = _get_revision_ref(data_dict)
     if revision_ref is None:
         result = core_package_show(context, data_dict)
     else:
@@ -262,7 +262,8 @@ def resource_show_revision(context, data_dict):
     :rtype: dict
     """
     resource = core_resource_show(context, data_dict)
-    revision_ref = data_dict.get('revision_ref', request.params.get('revision_ref'))
+    revision_ref = _get_revision_ref(data_dict)
+
     if revision_ref is None:
         return resource
 
@@ -456,3 +457,16 @@ def _get_dataset_name(id_or_name):
         raise toolkit.ObjectNotFound('Package {} not found'.format(id_or_name))
 
     return dataset.name
+
+
+def _get_revision_ref(data_dict):
+    """Get the revision_ref parameter from data_dict or query string
+    """
+    revision_ref = data_dict.get('revision_ref')
+    if revision_ref is None:
+        try:
+            revision_ref = request.params.get('revision_ref')
+        except TypeError:
+            pass
+
+    return revision_ref
