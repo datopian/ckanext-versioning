@@ -261,18 +261,20 @@ def resource_show_revision(context, data_dict):
     :returns: A resource dict
     :rtype: dict
     """
-    resource = core_resource_show(context, data_dict)
     revision_ref = _get_revision_ref(data_dict)
-
     if revision_ref is None:
-        return resource
+        return core_resource_show(context, data_dict)
 
-    package = _get_package_in_revision(context, {'id': resource['package_id']}, revision_ref)
-    resource = h.find_resource_in_package(package, resource['id'])
-    if resource is None:
+    model = context['model']
+    id = toolkit.get_or_bust(data_dict, 'id')
+    resource = model.Resource.get(id)
+
+    package = _get_package_in_revision(context, {'id': resource.package_id}, revision_ref)
+    resource_dict = h.find_resource_in_package(package, id)
+    if resource_dict is None:
         raise toolkit.ObjectNotFound("Resource not found for dataset revision")
 
-    return resource
+    return resource_dict
 
 
 @toolkit.side_effect_free
