@@ -661,8 +661,7 @@ class TestPackageShowRevision(MetastoreBackendTestBase):
         initial_resource = test_helpers.call_action(
             'resource_show',
             context,
-            id=self.dataset['id'],
-            resource_id=self.uploaded_resource['id'],
+            id=self.uploaded_resource['id'],
             revision_ref=initial_revision
         )
 
@@ -692,8 +691,7 @@ class TestPackageShowRevision(MetastoreBackendTestBase):
         initial_resource = test_helpers.call_action(
             'resource_show',
             context,
-            id=self.dataset['id'],
-            resource_id=self.url_resource['id'],
+            id=self.url_resource['id'],
             revision_ref=initial_revision
         )
 
