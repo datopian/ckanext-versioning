@@ -5,6 +5,7 @@ import logging
 import re
 
 from ckan import model as core_model
+from ckan.common import request
 from ckan.logic.action.get import package_show as core_package_show
 from ckan.logic.action.get import resource_show as core_resource_show
 from ckan.plugins import toolkit
@@ -208,7 +209,7 @@ def package_show_revision(context, data_dict):
     :returns: A package dict
     :rtype: dict
     """
-    revision_ref = data_dict.get('revision_ref')
+    revision_ref = data_dict.get('revision_ref', request.params.get('revision_ref'))
     if revision_ref is None:
         result = core_package_show(context, data_dict)
     else:
@@ -260,13 +261,13 @@ def resource_show_revision(context, data_dict):
     :returns: A resource dict
     :rtype: dict
     """
-    revision_ref = data_dict.get('revision_ref')
+    resource = core_resource_show(context, data_dict)
+    revision_ref = data_dict.get('revision_ref', request.params.get('revision_ref'))
     if revision_ref is None:
-        return core_resource_show(context, data_dict)
+        return resource
 
-    resource_id = toolkit.get_or_bust(data_dict, 'resource_id')
-    package = _get_package_in_revision(context, data_dict, revision_ref)
-    resource = h.find_resource_in_package(package, resource_id)
+    package = _get_package_in_revision(context, {'id': resource['package_id']}, revision_ref)
+    resource = h.find_resource_in_package(package, resource['id'])
     if resource is None:
         raise toolkit.ObjectNotFound("Resource not found for dataset revision")
 
