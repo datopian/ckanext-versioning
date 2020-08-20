@@ -209,7 +209,7 @@ def package_show_revision(context, data_dict):
     :returns: A package dict
     :rtype: dict
     """
-    revision_ref = data_dict.get('revision_ref', request.params.get('revision_ref'))
+    revision_ref = _get_revision_ref(data_dict)
     if revision_ref is None:
         result = core_package_show(context, data_dict)
     else:
@@ -261,17 +261,20 @@ def resource_show_revision(context, data_dict):
     :returns: A resource dict
     :rtype: dict
     """
-    resource = core_resource_show(context, data_dict)
-    revision_ref = data_dict.get('revision_ref', request.params.get('revision_ref'))
+    revision_ref = _get_revision_ref(data_dict)
     if revision_ref is None:
-        return resource
+        return core_resource_show(context, data_dict)
 
-    package = _get_package_in_revision(context, {'id': resource['package_id']}, revision_ref)
-    resource = h.find_resource_in_package(package, resource['id'])
-    if resource is None:
+    model = context['model']
+    id = toolkit.get_or_bust(data_dict, 'id')
+    resource = model.Resource.get(id)
+
+    package = _get_package_in_revision(context, {'id': resource.package_id}, revision_ref)
+    resource_dict = h.find_resource_in_package(package, id)
+    if resource_dict is None:
         raise toolkit.ObjectNotFound("Resource not found for dataset revision")
 
-    return resource
+    return resource_dict
 
 
 @toolkit.side_effect_free
@@ -456,3 +459,16 @@ def _get_dataset_name(id_or_name):
         raise toolkit.ObjectNotFound('Package {} not found'.format(id_or_name))
 
     return dataset.name
+
+
+def _get_revision_ref(data_dict):
+    """Get the revision_ref parameter from data_dict or query string
+    """
+    revision_ref = data_dict.get('revision_ref')
+    if revision_ref is None:
+        try:
+            revision_ref = request.params.get('revision_ref')
+        except TypeError:
+            pass
+
+    return revision_ref
