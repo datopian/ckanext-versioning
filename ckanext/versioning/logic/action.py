@@ -6,6 +6,7 @@ import re
 
 from ckan import model as core_model
 from ckan.common import request
+from ckan.logic.action.delete import dataset_purge as core_dataset_purge
 from ckan.logic.action.get import package_show as core_package_show
 from ckan.logic.action.get import resource_show as core_resource_show
 from ckan.plugins import toolkit
@@ -472,3 +473,27 @@ def _get_revision_ref(data_dict):
             pass
 
     return revision_ref
+
+
+def dataset_purge(context, data_dict):
+    """Purge a dataset.
+
+    .. warning:: Purging a dataset cannot be undone!
+
+    This wraps the core ``dataset_purge`` action with code that also removes
+    the datapackage from metastore.
+
+    :param id: the name or id of the dataset to be purged
+    :type id: string
+    """
+
+    # We do not check permissions as we rely on core action to check them
+    core_dataset_purge(context, data_dict)
+    assert 'package' in context
+
+    backend = get_metastore_backend()
+    try:
+        backend.delete(context['package'].name)
+    except exc.NotFound as e:
+        log.warning("Dataset deleted from DB but not found in metastore: %s; "
+                    "Error: %s", context['package'].id, e)

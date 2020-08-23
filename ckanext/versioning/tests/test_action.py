@@ -1,7 +1,8 @@
 from ckan.plugins import toolkit
 from ckan.tests import factories
 from ckan.tests import helpers as test_helpers
-from nose.tools import assert_equals, assert_in, assert_raises
+from metastore.backend.exc import NotFound
+from nose.tools import assert_equals, assert_in, assert_raises, raises
 
 from ckanext.versioning.logic import helpers
 from ckanext.versioning.tests import MetastoreBackendTestBase
@@ -696,3 +697,67 @@ class TestPackageShowRevision(MetastoreBackendTestBase):
         )
 
         assert_equals(initial_resource['url'], 'http://link.to.some.data')
+
+
+class TestDatasetPurge(MetastoreBackendTestBase):
+
+    def setup(self):
+        super(TestDatasetPurge, self).setup()
+
+        self.sys_admin = factories.Sysadmin()
+        self.org_admin = factories.User()
+        self.org = factories.Organization(
+            users=[
+                {'name': self.org_admin['name'], 'capacity': 'admin'},
+            ]
+        )
+
+        self.dataset = factories.Dataset(owner_org=self.org['id'])
+
+    def test_dataset_purge_deletes_from_metastore(self):
+        context = self._get_context(self.sys_admin)
+
+        test_helpers.call_action(
+            'dataset_purge',
+            context,
+            id=self.dataset['name'],
+        )
+
+        backend = helpers.get_metastore_backend()
+
+        with assert_raises(NotFound):
+            backend.fetch(self.dataset['name'])
+
+    def test_dataset_purge_works_if_not_in_metastore(self):
+        context = self._get_context(self.sys_admin)
+
+        backend = helpers.get_metastore_backend()
+        backend.delete(self.dataset['name'])
+
+        test_helpers.call_action(
+            'dataset_purge',
+            context,
+            id=self.dataset['id'],
+        )
+
+    def test_dataset_purge_deletes_from_db(self):
+        context = self._get_context(self.sys_admin)
+
+        test_helpers.call_action(
+            'dataset_purge',
+            context,
+            id=self.dataset['id'],
+        )
+
+        pkg = context['model'].Package.get(self.dataset['id'])
+        assert pkg is None, "Package still exists in DB"
+
+    @raises(toolkit.NotAuthorized)
+    def test_dataset_purge_not_allowed_to_non_sysadmins(self):
+        context = self._get_context(self.org_admin)
+
+        test_helpers.call_action(
+            'dataset_purge',
+            context,
+            id=self.dataset['name'],
+        )
