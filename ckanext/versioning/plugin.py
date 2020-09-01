@@ -43,10 +43,12 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
             'resource_show_tag': action.resource_show_tag,
             'dataset_versions_diff': action.dataset_versions_diff,
 
-            # Overridden
+            # Chained to core actions
+            'dataset_purge': action.dataset_purge,
+
+            # Overridden core actions
             'package_show': action.package_show_revision,
             'resource_show': action.resource_show_revision,
-            'dataset_purge': action.dataset_purge,
         }
 
     # IAuthFunctions
@@ -74,39 +76,30 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
     # IPackageController
 
     def before_view(self, pkg_dict):
-        try:
-            versions = action.dataset_tag_list(
-                {"ignore_auth": True},
-                {"dataset": pkg_dict['id']}
-                )
-        except toolkit.ObjectNotFound:
-            # Do not blow up if package is gone
-            return pkg_dict
 
-        toolkit.c.versions = versions
-
-        revision_ref = None
         try:
             revision_ref = toolkit.request.view_args['revision_ref']
         except (AttributeError, KeyError):
             # TODO: How to correctly access to a request arg in CKAN?
-            pass
+            return pkg_dict
 
-        if revision_ref:
-            tag_list = action.dataset_tag_list({}, {
-                'dataset': pkg_dict['name']
-            })
-            if get_metastore_backend().is_valid_revision_id(revision_ref):
-                revision = filter(lambda d: d['revision_ref'] == revision_ref, tag_list)[0]
-            else:
-                revision = filter(lambda d: d['name'] == revision_ref, tag_list)[0]
-            # current_version needs to be a Tag (eg, name and description).
-            # This assumes that there is a tag for the given revision
-            toolkit.c.current_version = revision
+        if get_metastore_backend().is_valid_revision_id(revision_ref):
+            tags = action.dataset_tag_list({"ignore_auth": True},
+                                           {'dataset': pkg_dict['name']})
+            revision = filter(lambda d: d['revision_ref'] == revision_ref,
+                              tags)[0]
+        else:
+            revision = action.dataset_tag_show({"ignore_auth": True},
+                                               {'dataset': pkg_dict['name'],
+                                                'tag': revision_ref})
 
-            # Hide package creation / update date if viewing a specific version
-            pkg_dict['metadata_created'] = None
-            pkg_dict['metadata_updated'] = None
+        # current_version needs to be a Tag (eg, name and description).
+        # This assumes that there is a tag for the given revision
+        toolkit.c.current_version = revision
+
+        # Hide package creation / update date if viewing a specific version
+        pkg_dict['metadata_created'] = None
+        pkg_dict['metadata_updated'] = None
         return pkg_dict
 
     def after_create(self, context, pkg_dict):

@@ -34,6 +34,13 @@ ckan.module('dataset_version_controls', function ($) {
             this.$('.create-version-form').on('submit', this._onCreate);
             this.$('.update-version-form').on('submit', this._onUpdate);
             this.$('.revert-to-btn').on('click', this._onRevert);
+
+            $(document).ready(this._onDocumentReady);
+        },
+
+        _onDocumentReady: function ()
+        {
+            this._loadTagList(this._packageId);
         },
 
         _onDelete: function (evt)
@@ -87,6 +94,69 @@ ckan.module('dataset_version_controls', function ($) {
                     'Content-Type': 'application/json'
                 }
             });
+        },
+
+        _loadTagList: function (datasetId) {
+            let params = new URLSearchParams({"dataset": datasetId});
+            let url = this._apiBaseUrl + 'dataset_tag_list?' + params;
+            let that = this;
+
+            fetch(url).then(function(response) {
+                if (response.status !== 200) {
+                    console.error("Failed to fetch list of tags, got HTTP " + response.status);
+                } else {
+                    response.json().then(function(payload) {
+                        that._renderTagList(payload.result);
+                    }).catch(function(e) {
+                        console.error("Failed parsing response payload as JSON: " + e);
+                    });
+                }
+            }).catch(function(e) {
+                console.error("Error fetching list of tags: " + e);
+            });
+        },
+
+        _renderTagList: function (tags) {
+            let container = this.$('#tag-list');
+            if (tags.length < 1) {
+                container.html('There are no tags');
+                return;
+            }
+
+            container.html('There are ' + tags.length + ' tags');
+
+            /*
+            {% if versions | length > 0 %}
+              <table class="table table-striped table-bordered table-condensed">
+                <thead>
+                  <tr>
+                    <th scope="col">Version</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Published</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for version in versions %}
+                  <tr>
+                    <th scope="row" class="dataset-label">
+                      <a href="{{ h.url_for_revision(pkg, version=version, route_name='versioning.show') }}">
+                        {{ version.name }}
+                      </a>
+                    </th>
+                    <td class="dataset-details">
+                      {{ version.description }}
+                    </td>
+                    <td class="dataset-details">
+                      {{h.render_datetime(version.created, with_hours=True)}}
+                    </td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            {% else %}
+              <p>{{ _('There are no versions available for this dataset') }}</p>
+            {% endif %}
+            */
         },
 
         _delete: function (tag, dataset) {
@@ -166,7 +236,7 @@ ckan.module('dataset_version_controls', function ($) {
                     alert(jsonResponse.error.message)
                 }
                 else {
-                    alert(`There was an error ${failed_action} the dataset version.`);
+                    alert(`There was an error ${failed_action} the dataset tag.`);
                     console.error({ params, jsonResponse });
                 }
             });
