@@ -43,7 +43,7 @@ def tag_to_dict(tag):
     return {
         'package_id': tag.package_id,
         'name': tag.name,
-        'created': tag.created.isoformat().split('+')[0],
+        'created': tag.created.isoformat(),
         'revision_ref': tag.revision_ref,
         'author': tag.author.name,
         'author_email': tag.author.email,

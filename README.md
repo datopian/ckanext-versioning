@@ -19,8 +19,8 @@ For more background see https://tech.datopian.com/versioning/
 
 ## Requirements
 
-ckanext-versioning has been tested to work with CKAN 2.8. It may work with
-other versions as well.
+ckanext-verisoning requires CKAN 2.8.4 or a newer version of CKAN 2.8. 
+It may work with CKAN 2.9 as well but this is currently not tested.
 
 ## Installation
 

@@ -34,6 +34,13 @@ ckan.module('dataset_version_controls', function ($) {
             this.$('.create-version-form').on('submit', this._onCreate);
             this.$('.update-version-form').on('submit', this._onUpdate);
             this.$('.revert-to-btn').on('click', this._onRevert);
+
+            $(document).ready(this._onDocumentReady);
+        },
+
+        _onDocumentReady: function ()
+        {
+            this._loadTagList(this._packageId);
         },
 
         _onDelete: function (evt)
@@ -87,6 +94,58 @@ ckan.module('dataset_version_controls', function ($) {
                     'Content-Type': 'application/json'
                 }
             });
+        },
+
+        _loadTagList: function (datasetId) {
+            let params = new URLSearchParams({"dataset": datasetId});
+            let url = this._apiBaseUrl + 'dataset_tag_list?' + params;
+            let that = this;
+
+            fetch(url).then(function(response) {
+                if (response.status !== 200) {
+                    console.error("Failed to fetch list of tags, got HTTP " + response.status);
+                } else {
+                    response.json().then(function(payload) {
+                        that._renderTagList(payload.result);
+                    }).catch(function(e) {
+                        console.error("Failed rendering list of tags: " + e);
+                    });
+                }
+            }).catch(function(e) {
+                console.error("Error fetching list of tags: " + e);
+            });
+        },
+
+        _renderTagList: function (tags) {
+            const loader = $('#tag-list .tags-list__loading');
+            const table = $('#tag-list .tags-list__list');
+            const noTagsMessage = $('#tag-list .tags-list__no-tags');
+            const tagRowTemplate = $('tbody tr', table)[0];
+            const tagHrefTemplate = $('.tags-list__tag-name a', tagRowTemplate).attr('href');
+
+            loader.hide();
+
+            if (tags.length < 1) {
+                noTagsMessage.show();
+                return;
+            }
+
+            $('tbody', table).empty();
+            for (let i = 0; i < tags.length; i++) {
+                let tag = tags[i];
+                let row = $(tagRowTemplate).clone();
+                table.append(row);
+                $('.tags-list__tag-name a', row).attr('href', tagHrefTemplate.replace('__VERSION__', tag.name));
+                $('.tags-list__tag-name a', row).text(tag.name);
+                $('.tags-list__tag-description', row).text(tag.description);
+
+                let datetime = $('<span class="automatic-local-datetime"/>');
+                datetime.text(moment(tag.created).format('LL, LT ([UTC]Z)'));
+                datetime.data('datetime', tag.created);
+                $('.tags-list__tag-timestamp', row).append(datetime);
+            }
+
+            table.show();
         },
 
         _delete: function (tag, dataset) {
@@ -166,7 +225,7 @@ ckan.module('dataset_version_controls', function ($) {
                     alert(jsonResponse.error.message)
                 }
                 else {
-                    alert(`There was an error ${failed_action} the dataset version.`);
+                    alert(`There was an error ${failed_action} the dataset tag.`);
                     console.error({ params, jsonResponse });
                 }
             });
