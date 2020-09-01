@@ -12,13 +12,38 @@
   {% endif %}
 >
 
-  {% if not c.revision_date %}
-    <h3>Dataset Tags</h3>
-    <div id="tag-list">
-      Loading list of tags ...
+  <h3>{{ _('Dataset Tags') }}</h3>
+  <div id="tag-list" class="tags-list__container">
+    <div class="tags-list__loading">
+      {{ _('Loading list of tags') }} ...
       <i class="fa fa-spinner fa-pulse"></i>
     </div>
-  {% endif %}
+
+    <table class="table table-striped table-bordered table-condensed tags-list__list" style="display: none"
+           aria-hidden="true">
+      <thead>
+        <tr>
+          <th scope="col">{{ _('Tag') }}</th>
+          <th scope="col">{{ _('Description') }}</th>
+          <th scope="col">{{ _('Published') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row" class="dataset-label tags-list__tag-name">
+            <a href="{{ h.url_for_revision(pkg, version={'name': '__VERSION__'}, route_name='versioning.show') }}"></a>
+          </th>
+          <td class="dataset-details tags-list__tag-description"></td>
+          <td class="dataset-details tags-list__tag-timestamp"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="tags-list__no-tags" style="display: none" aria-hidden="true">
+      <p>{{ _('This dataset does not have any tagged revisions') }}</p>
+    </div>
+  </div>
+
   {% if c.current_version %}
     {% if h.check_access('dataset_tag_delete', {'dataset': pkg.id}) %}
       <button data-version-id="{{ c.current_version.name }}"
@@ -51,7 +76,7 @@
       {% endif %}
     </div>
 
-  {% elif not c.revision_date %}
+  {% else %}
     {% if h.check_access('dataset_tag_create', {'dataset': pkg.id}) %}
       <!-- Button trigger modal -->
       <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createVersionModal">
@@ -59,13 +84,12 @@
       </button>
 
       {% snippet 'package/snippets/create_version.html' %}
-
     {% endif %}
+
     {% if h.check_access('dataset_versions_diff', {'dataset': pkg.id}) %}
-      <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#compareVersionsModal" />
+      <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#compareVersionsModal">
         {{ _('Compare Tags') }}
       </button>
-
       {% snippet 'package/snippets/compare_versions.html', pkg=pkg %}
     {% endif %}
   {% endif %}

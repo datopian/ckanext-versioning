@@ -108,7 +108,7 @@ ckan.module('dataset_version_controls', function ($) {
                     response.json().then(function(payload) {
                         that._renderTagList(payload.result);
                     }).catch(function(e) {
-                        console.error("Failed parsing response payload as JSON: " + e);
+                        console.error("Failed rendering list of tags: " + e);
                     });
                 }
             }).catch(function(e) {
@@ -117,46 +117,35 @@ ckan.module('dataset_version_controls', function ($) {
         },
 
         _renderTagList: function (tags) {
-            let container = this.$('#tag-list');
+            const loader = $('#tag-list .tags-list__loading');
+            const table = $('#tag-list .tags-list__list');
+            const noTagsMessage = $('#tag-list .tags-list__no-tags');
+            const tagRowTemplate = $('tbody tr', table)[0];
+            const tagHrefTemplate = $('.tags-list__tag-name a', tagRowTemplate).attr('href');
+
+            loader.hide();
+
             if (tags.length < 1) {
-                container.html('There are no tags');
+                noTagsMessage.show();
                 return;
             }
 
-            container.html('There are ' + tags.length + ' tags');
+            $('tbody', table).empty();
+            for (let i = 0; i < tags.length; i++) {
+                let tag = tags[i];
+                let row = $(tagRowTemplate).clone();
+                table.append(row);
+                $('.tags-list__tag-name a', row).attr('href', tagHrefTemplate.replace('__VERSION__', tag.name));
+                $('.tags-list__tag-name a', row).text(tag.name);
+                $('.tags-list__tag-description', row).text(tag.description);
 
-            /*
-            {% if versions | length > 0 %}
-              <table class="table table-striped table-bordered table-condensed">
-                <thead>
-                  <tr>
-                    <th scope="col">Version</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Published</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {% for version in versions %}
-                  <tr>
-                    <th scope="row" class="dataset-label">
-                      <a href="{{ h.url_for_revision(pkg, version=version, route_name='versioning.show') }}">
-                        {{ version.name }}
-                      </a>
-                    </th>
-                    <td class="dataset-details">
-                      {{ version.description }}
-                    </td>
-                    <td class="dataset-details">
-                      {{h.render_datetime(version.created, with_hours=True)}}
-                    </td>
-                  </tr>
-                {% endfor %}
-                </tbody>
-              </table>
-            {% else %}
-              <p>{{ _('There are no versions available for this dataset') }}</p>
-            {% endif %}
-            */
+                let datetime = $('<span class="automatic-local-datetime"/>');
+                datetime.text(moment(tag.created).format('LL, LT ([UTC]Z)'));
+                datetime.data('datetime', tag.created);
+                $('.tags-list__tag-timestamp', row).append(datetime);
+            }
+
+            table.show();
         },
 
         _delete: function (tag, dataset) {
