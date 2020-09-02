@@ -71,6 +71,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
             'dataset_version_has_link_resources': helpers.has_link_resources,
             'dataset_version_compare_pkg_dicts': helpers.compare_pkg_dicts,
             'tojson': helpers.tojson,
+            'versioning_get_query_param': helpers.get_query_param,
         }
 
     # IPackageController
