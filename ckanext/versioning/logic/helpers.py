@@ -7,21 +7,21 @@ from ckanext.versioning.common import get_metastore_backend
 from ckanext.versioning.lib.changes import check_metadata_changes, check_resource_changes
 
 
-def url_for_revision(package, version=None, **kwargs):
+def url_for_revision(package, release=None, **kwargs):
     """Get the URL for a package / resource related action, with potential
-    revision ID taken from a version info object
+    revision ID taken from a release info object
 
-    If `version` is set, the version ID is appended to the package ID,
-    and a ?version=... query parameter is added to URLs.
+    If `release` is set, the release ID is appended to the package ID,
+    and a ?release=... query parameter is added to URLs.
 
-    If the `resource_id` parameter is provided and `version` is set, a
+    If the `resource_id` parameter is provided and `release` is set, a
     revision ID will be appended to the resource_id.
 
     If the `route_name` parameter is provided, it will be used as the route
     name; Otherwise, `controller` and `action` are expected as arguments.
     """
-    if version:
-        kwargs['revision_ref'] = version['name']
+    if release:
+        kwargs['revision_ref'] = release['name']
     kwargs['package_id'] = package.get('name', package['id'])
 
     if 'route_name' in kwargs:
@@ -45,9 +45,9 @@ def has_link_resources(package):
 
 def compare_pkg_dicts(old, new, old_activity_id):
     '''
-    Takes two package dictionaries that represent consecutive versions of
+    Takes two package dictionaries that represent consecutive releases of
     the same dataset and returns a list of detailed & formatted summaries of
-    the changes between the two versions. Old and new are the two package
+    the changes between the two releases. Old and new are the two package
     dictionaries. The function assumes that both dictionaries will have
     all of the default package dictionary keys, and also checks for fields
     added by extensions and extra fields added by the user in the web
@@ -77,7 +77,7 @@ def get_license(license_id):
     Get the license details from the license_id as license details are
     not stored in DB but in the license file.
     Method package_show doesn't fetch the license again from file but
-    only from SOLR. So need to fetch the license details in case of versions
+    only from SOLR. So need to fetch the license details in case of releases
     from the license file.
     Using the upsteam method to fetch license Details
     https://github.com/ckan/ckan/blob/8f271bfe3eccaa83a419ee55e3e35042d1196c5a/ckan/logic/action/get.py#L1806

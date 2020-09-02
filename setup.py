@@ -21,7 +21,7 @@ setup(
     # http://packaging.python.org/en/latest/tutorial.html#version
     version=ckanext.versioning.__version__,
 
-    description='''Create and manage named versions of datasets''',
+    description='''Create and manage revisions and named releases of datasets''',
     long_description=long_description,
 
     # The project's main homepage.
@@ -52,7 +52,7 @@ setup(
 
 
     # What does your project relate to?
-    keywords='''CKAN versions revisions tags metadata data versioning''',
+    keywords='''CKAN versions releases revisions tags metadata data versioning''',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().

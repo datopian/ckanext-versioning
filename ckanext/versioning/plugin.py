@@ -27,21 +27,21 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_public_directory(config_, 'public')
-        toolkit.add_resource('fanstatic', 'versions')
+        toolkit.add_resource('fanstatic', 'versioning')
 
     # IActions
 
     def get_actions(self):
         return {
-            'dataset_tag_create': action.dataset_tag_create,
-            'dataset_tag_delete': action.dataset_tag_delete,
-            'dataset_tag_list': action.dataset_tag_list,
-            'dataset_tag_update': action.dataset_tag_update,
-            'dataset_tag_show': action.dataset_tag_show,
+            'dataset_release_create': action.dataset_release_create,
+            'dataset_release_delete': action.dataset_release_delete,
+            'dataset_release_list': action.dataset_release_list,
+            'dataset_release_update': action.dataset_release_update,
+            'dataset_release_show': action.dataset_release_show,
             'dataset_revert': action.dataset_revert,
-            'package_show_tag': action.package_show_tag,
-            'resource_show_tag': action.resource_show_tag,
-            'dataset_versions_diff': action.dataset_versions_diff,
+            'package_show_release': action.package_show_release,
+            'resource_show_release': action.resource_show_release,
+            'dataset_releases_diff': action.dataset_releases_diff,
 
             # Chained to core actions
             'dataset_purge': action.dataset_purge,
@@ -55,12 +55,12 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
 
     def get_auth_functions(self):
         return {
-            'dataset_tag_create': auth.dataset_tag_create,
-            'dataset_tag_delete': auth.dataset_tag_delete,
-            'dataset_tag_list': auth.dataset_tag_list,
-            'dataset_tag_show': auth.dataset_tag_show,
+            'dataset_release_create': auth.dataset_release_create,
+            'dataset_release_delete': auth.dataset_release_delete,
+            'dataset_release_list': auth.dataset_release_list,
+            'dataset_release_show': auth.dataset_release_show,
             'dataset_revert': auth.dataset_revert,
-            'dataset_versions_diff': auth.dataset_versions_diff,
+            'dataset_releases_diff': auth.dataset_releases_diff,
         }
 
     # ITemplateHelpers
@@ -68,8 +68,8 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
     def get_helpers(self):
         return {
             'url_for_revision': helpers.url_for_revision,
-            'dataset_version_has_link_resources': helpers.has_link_resources,
-            'dataset_version_compare_pkg_dicts': helpers.compare_pkg_dicts,
+            'dataset_release_has_link_resources': helpers.has_link_resources,
+            'dataset_release_compare_pkg_dicts': helpers.compare_pkg_dicts,
             'tojson': helpers.tojson,
         }
 
@@ -84,20 +84,20 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
             return pkg_dict
 
         if get_metastore_backend().is_valid_revision_id(revision_ref):
-            tags = action.dataset_tag_list({"ignore_auth": True},
-                                           {'dataset': pkg_dict['name']})
+            releases = action.dataset_release_list({"ignore_auth": True},
+                                                   {'dataset': pkg_dict['name']})
             revision = filter(lambda d: d['revision_ref'] == revision_ref,
-                              tags)[0]
+                              releases)[0]
         else:
-            revision = action.dataset_tag_show({"ignore_auth": True},
-                                               {'dataset': pkg_dict['name'],
-                                                'tag': revision_ref})
+            revision = action.dataset_release_show({"ignore_auth": True},
+                                                   {'dataset': pkg_dict['name'],
+                                                    'release': revision_ref})
 
-        # current_version needs to be a Tag (eg, name and description).
-        # This assumes that there is a tag for the given revision
-        toolkit.c.current_version = revision
+        # current_release needs to be a release (eg, name and description).
+        # This assumes that there is a release for the given revision
+        toolkit.c.current_release = revision
 
-        # Hide package creation / update date if viewing a specific version
+        # Hide package creation / update date if viewing a specific release
         pkg_dict['metadata_created'] = None
         pkg_dict['metadata_updated'] = None
         return pkg_dict

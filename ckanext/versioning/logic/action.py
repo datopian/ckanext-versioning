@@ -19,58 +19,58 @@ from ckanext.versioning.logic import helpers as h
 log = logging.getLogger(__name__)
 
 
-def dataset_tag_update(context, data_dict):
-    """Update a tag of the current dataset.
+def dataset_release_update(context, data_dict):
+    """Update a release of the current dataset.
 
     :param dataset: the id or name of the dataset
     :type dataset: string
-    :param tag: the id of the version
-    :type tag: string
-    :param name: A short name for the version
+    :param release: the id of the release
+    :type release: string
+    :param name: A short name for the release
     :type name: string
-    :param description: A description for the version
+    :param description: A description for the release
     :type description: string
-    :returns: the edited version
+    :returns: the edited release
     :rtype: dictionary
     """
-    tag, name, dataset_name_or_id = toolkit.get_or_bust(
-        data_dict, ['tag', 'name', 'dataset']
+    release, name, dataset_name_or_id = toolkit.get_or_bust(
+        data_dict, ['release', 'name', 'dataset']
         )
 
-    toolkit.check_access('dataset_tag_create', context, data_dict)
+    toolkit.check_access('dataset_release_create', context, data_dict)
     assert context.get('auth_user_obj')  # Should be here after `check_access`
 
     backend = get_metastore_backend()
     author = create_author_from_context(context)
     try:
-        tag_info = backend.tag_update(
+        release_info = backend.tag_update(
                 _get_dataset_name(dataset_name_or_id),
-                tag,
+                release,
                 new_name=name,
                 new_description=data_dict.get('description', None),
                 author=author
                 )
     except exc.NotFound:
-        raise toolkit.ObjectNotFound("Dataset tag not found.")
+        raise toolkit.ObjectNotFound("Dataset release not found.")
 
-    log.info('Tag "%s" with id %s modified successfully', name, tag)
+    log.info('Release "%s" with id %s modified successfully', name, release)
 
-    return tag_to_dict(tag_info)
+    return tag_to_dict(release_info)
 
 
-def dataset_tag_create(context, data_dict):
-    """Create a new tag from the current dataset's revision
+def dataset_release_create(context, data_dict):
+    """Create a new release from the current dataset's revision
 
     Currently you must have editor level access on the dataset
-    to create a tag.
+    to create a release.
 
     :param dataset: the id or name of the dataset
     :type dataset: string
-    :param name: A short name for the version
+    :param name: A short name for the release
     :type name: string
-    :param description: A description for the version
+    :param description: A description for the release
     :type description: string
-    :returns: the newly created version
+    :returns: the newly created release
     :rtype: dictionary
     """
     model = context.get('model', core_model)
@@ -80,7 +80,7 @@ def dataset_tag_create(context, data_dict):
     if not dataset:
         raise toolkit.ObjectNotFound('Dataset not found')
 
-    toolkit.check_access('dataset_tag_create', context, data_dict)
+    toolkit.check_access('dataset_release_create', context, data_dict)
     assert context.get('auth_user_obj')  # Should be here after `check_access`
 
     # TODO: Names like 'Version 1.2' are not allowed as Github tags
@@ -88,7 +88,7 @@ def dataset_tag_create(context, data_dict):
     author = create_author_from_context(context)
     current_revision = backend.fetch(dataset.name)
     try:
-        tag_info = backend.tag_create(
+        release_info = backend.tag_create(
                 dataset.name,
                 current_revision.revision,
                 name,
@@ -97,20 +97,20 @@ def dataset_tag_create(context, data_dict):
                 )
     except exc.Conflict as e:
         #  Name not unique
-        log.debug("Tag already exists: %s", e)
-        raise toolkit.ValidationError('Tag names must be unique per dataset')
+        log.debug("Release already exists: %s", e)
+        raise toolkit.ValidationError('Release names must be unique per dataset')
 
-    log.info('Tag "%s" created for package %s', name, dataset.id)
+    log.info('Release "%s" created for package %s', name, dataset.id)
 
-    return tag_to_dict(tag_info)
+    return tag_to_dict(release_info)
 
 
 def dataset_revert(context, data_dict):
-    """Reverts a dataset to a specified revision or tag
+    """Reverts a dataset to a specified revision or release
 
     param dataset: the dataset name or ID to be reverted
     type dataset: string
-    param revision_ref: the tag or revision to revert to
+    param revision_ref: the release or revision to revert to
     type revision_ref: string
     """
     dataset_id, revision_ref = toolkit.get_or_bust(
@@ -133,12 +133,12 @@ def dataset_revert(context, data_dict):
 
 
 @toolkit.side_effect_free
-def dataset_tag_list(context, data_dict):
-    """List versions of a given dataset
+def dataset_release_list(context, data_dict):
+    """List releases of a given dataset
 
     :param dataset: the id or name of the dataset
     :type dataset: string
-    :returns: list of matched versions
+    :returns: list of matched releases
     :rtype: list
     """
     model = context.get('model', core_model)
@@ -150,49 +150,49 @@ def dataset_tag_list(context, data_dict):
     backend = get_metastore_backend()
 
     with exception_mapper(exc.NotFound, toolkit.ObjectNotFound):
-        tag_list = backend.tag_list(dataset.name)
+        release_list = backend.release_list(dataset.name)
 
-    return [tag_to_dict(t) for t in tag_list]
+    return [tag_to_dict(t) for t in release_list]
 
 
 @toolkit.side_effect_free
-def dataset_tag_show(context, data_dict):
-    """Get a specific tag by ID
+def dataset_release_show(context, data_dict):
+    """Get a specific release by ID
 
     :param dataset: the name of the dataset
     :type dataset: string
-    :param tag: the id of the version
-    :type tag: string
-    :returns: The matched version
+    :param release: the id of the release
+    :type release: string
+    :returns: The matched release
     :rtype: dict
     """
-    dataset_name, tag = toolkit.get_or_bust(data_dict, ['dataset', 'tag'])
+    dataset_name, release = toolkit.get_or_bust(data_dict, ['dataset', 'release'])
     backend = get_metastore_backend()
     with exception_mapper(exc.NotFound, toolkit.ObjectNotFound):
-        tag_info = backend.tag_fetch(dataset_name, tag)
+        release_info = backend.tag_fetch(dataset_name, release)
 
-    return tag_to_dict(tag_info)
+    return tag_to_dict(release_info)
 
 
-def dataset_tag_delete(context, data_dict):
-    """Delete a specific version of a dataset
+def dataset_release_delete(context, data_dict):
+    """Delete a specific release of a dataset
 
     :param dataset: name of the dataset
     :type dataset: string
-    :param tag: the id of the version
-    :type tag: string
-    :returns: The matched version
+    :param release: the id of the release
+    :type release: string
+    :returns: The matched release
     :rtype: dict
     """
-    dataset_name, tag = toolkit.get_or_bust(data_dict, ['dataset', 'tag'])
+    dataset_name, release = toolkit.get_or_bust(data_dict, ['dataset', 'release'])
 
     backend = get_metastore_backend()
     try:
-        backend.tag_delete(dataset_name, tag)
+        backend.tag_delete(dataset_name, release)
     except Exception:
-        raise toolkit.ObjectNotFound('Dataset version not found')
+        raise toolkit.ObjectNotFound('Dataset release not found')
 
-    log.info('Tag %s of dataset %s was deleted', tag, dataset_name)
+    log.info('Release %s of dataset %s was deleted', release, dataset_name)
 
 
 @toolkit.side_effect_free
@@ -219,30 +219,30 @@ def package_show_revision(context, data_dict):
 
 
 @toolkit.side_effect_free
-def package_show_tag(context, data_dict):
-    """Wrapper for package_show with some additional version related info
+def package_show_release(context, data_dict):
+    """Wrapper for package_show with some additional release related info
 
-    This works just like package_show but also optionally accepts `version_id`
+    This works just like package_show but also optionally accepts `release_id`
     as a parameter; Providing it means that the returned data will show the
-    package metadata from the specified version, and also include the
-    version_metadata key with some version metadata.
+    package metadata from the specified release, and also include the
+    release_metadata key with some release metadata.
 
-    If version_id is not provided, package data will include a `versions` key
-    with a list of versions for this package.
+    If release_id is not provided, package data will include a `releases` key
+    with a list of releases for this package.
     """
-    tag = data_dict.get('tag', None)
+    release = data_dict.get('release', None)
     dataset_name = data_dict.get('dataset', None)
-    if tag and dataset_name:
-        version_dict = dataset_tag_show(
-            context, {'tag': tag, 'dataset': dataset_name}
+    if release and dataset_name:
+        release_dict = dataset_release_show(
+            context, {'release': release, 'dataset': dataset_name}
             )
         package_dict = _get_package_in_revision(
-            context, data_dict, version_dict['name'])
-        package_dict['version_metadata'] = version_dict
+            context, data_dict, release_dict['name'])
+        package_dict['release_metadata'] = release_dict
     else:
         package_dict = core_package_show(context, data_dict)
-        versions = dataset_tag_list(context, {'dataset': package_dict['id']})
-        package_dict['versions'] = versions
+        releases = dataset_release_list(context, {'dataset': package_dict['id']})
+        package_dict['releases'] = releases
 
     return package_dict
 
@@ -256,7 +256,7 @@ def resource_show_revision(context, data_dict):
 
     :param id: the id of the resource
     :type id: string
-    :param revision_ref: the ID of the revision or tag name
+    :param revision_ref: the ID of the revision or release name
     :type revision_ref: string
     :returns: A resource dict
     :rtype: dict
@@ -278,16 +278,16 @@ def resource_show_revision(context, data_dict):
 
 
 @toolkit.side_effect_free
-def resource_show_tag(context, data_dict):
+def resource_show_release(context, data_dict):
     """Wrapper for resource_show allowing to get a resource from a specific
-    dataset version
+    dataset release
     """
-    version_id = data_dict.get('version_id', None)
-    if version_id:
-        version_dict = dataset_tag_show(context, {'id': version_id})
+    release_id = data_dict.get('release_id', None)
+    if release_id:
+        release_dict = dataset_release_show(context, {'id': release_id})
         resource_dict = _get_resource_in_revision(
-            context, data_dict, version_dict['package_revision_id'])
-        resource_dict['version_metadata'] = version_dict
+            context, data_dict, release_dict['package_revision_id'])
+        resource_dict['release_metadata'] = release_dict
         return resource_dict
 
     else:
@@ -353,61 +353,61 @@ def _fix_resource_data(resource_dict, revision_id):
 
 
 @toolkit.side_effect_free
-def dataset_versions_diff(context, data_dict):
-    '''Returns a diff between two dataset versions
+def dataset_release_diff(context, data_dict):
+    '''Returns a diff between two dataset releases
 
     :param id: the id of the dataset
     :type id: string
-    :param version_id_1: the id of the first version to compare
+    :param release_id_1: the id of the first release to compare
     :type id: string
-    :param version_id_2: the id of the second version to compare
+    :param release_id_2: the id of the second release to compare
     :type id: string
     :param diff_type: 'unified', 'context', 'html'
     :type diff_type: string
 
     '''
 
-    dataset_id, tag_1, tag_2 = toolkit.get_or_bust(
-        data_dict, ['id', 'version_id_1', 'version_id_2'])
+    dataset_id, release_1, release_2 = toolkit.get_or_bust(
+        data_dict, ['id', 'release_1', 'release_2'])
     diff_type = data_dict.get('diff_type', 'unified')
 
     toolkit.check_access(
-        u'dataset_versions_diff',
+        u'dataset_release_diff',
         context,
         {'name_or_id': dataset_id}
     )
 
-    dataset_version_1 = _get_dataset_version_dict(
-        context, dataset_id, tag_1)
-    dataset_version_2 = _get_dataset_version_dict(
-        context, dataset_id, tag_2)
+    dataset_release_1 = _get_dataset_release_dict(
+        context, dataset_id, release_1)
+    dataset_release_2 = _get_dataset_release_dict(
+        context, dataset_id, release_2)
 
-    diff = _generate_diff(dataset_version_1, dataset_version_2, diff_type)
+    diff = _generate_diff(dataset_release_1, dataset_release_2, diff_type)
 
     return {
         'diff': diff,
-        'dataset_dict_1': dataset_version_1,
-        'dataset_dict_2': dataset_version_2,
+        'dataset_dict_1': dataset_release_1,
+        'dataset_dict_2': dataset_release_2,
     }
 
 
-def _get_dataset_version_dict(context, dataset_id, tag):
+def _get_dataset_release_dict(context, dataset_id, release):
 
     dataset_dict = toolkit.get_action('package_show')(
         context, {'id': dataset_id})
 
-    if tag != 'current':
-        version_dict = toolkit.get_action('dataset_tag_show')(
-            context, {'tag': tag, 'dataset': dataset_dict['name']})
+    if release != 'current':
+        release_dict = toolkit.get_action('dataset_release_show')(
+            context, {'release': release, 'dataset': dataset_dict['name']})
 
-        if not version_dict['package_id'] == dataset_dict['name']:
+        if not release_dict['package_id'] == dataset_dict['name']:
             raise toolkit.ValidationError(
-                'You can only compare versions of the same dataset')
+                'You can only compare releases of the same dataset')
 
-        dataset_dict = toolkit.get_action('package_show_tag')(
+        dataset_dict = toolkit.get_action('package_show_release')(
             context, {
-                'tag': version_dict['name'],
-                'dataset': version_dict['package_id'],
+                'release': release_dict['name'],
+                'dataset': release_dict['package_id'],
                 'id': dataset_dict['id']
             }
         )
@@ -417,7 +417,7 @@ def _get_dataset_version_dict(context, dataset_id, tag):
                 dataset_dict['license_id'])
             dataset_dict['license_url'] = _license.url
             dataset_dict['license_title'] = _license.title
-        dataset_dict.pop('version_metadata', None)
+        dataset_dict.pop('release_metadata', None)
 
     return dataset_dict
 
