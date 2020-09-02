@@ -41,7 +41,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
             'dataset_revert': action.dataset_revert,
             'package_show_release': action.package_show_release,
             'resource_show_release': action.resource_show_release,
-            'dataset_releases_diff': action.dataset_releases_diff,
+            'dataset_revision_diff': action.dataset_revision_diff,
 
             # Chained to core actions
             'dataset_purge': action.dataset_purge,
@@ -60,7 +60,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
             'dataset_release_list': auth.dataset_release_list,
             'dataset_release_show': auth.dataset_release_show,
             'dataset_revert': auth.dataset_revert,
-            'dataset_releases_diff': auth.dataset_releases_diff,
+            'dataset_revision_diff': auth.dataset_revision_diff,
         }
 
     # ITemplateHelpers
@@ -68,7 +68,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
     def get_helpers(self):
         return {
             'url_for_revision': helpers.url_for_revision,
-            'dataset_release_has_link_resources': helpers.has_link_resources,
+            'dataset_has_link_resources': helpers.has_link_resources,
             'dataset_release_compare_pkg_dicts': helpers.compare_pkg_dicts,
             'tojson': helpers.tojson,
         }

@@ -49,5 +49,5 @@ def dataset_release_show(context, data_dict):
 
 
 @toolkit.auth_allow_anonymous_access
-def dataset_release_diff(context, data_dict):
+def dataset_revision_diff(context, data_dict):
     return dataset_release_show(context, data_dict)

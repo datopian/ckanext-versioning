@@ -150,7 +150,7 @@ def dataset_release_list(context, data_dict):
     backend = get_metastore_backend()
 
     with exception_mapper(exc.NotFound, toolkit.ObjectNotFound):
-        release_list = backend.release_list(dataset.name)
+        release_list = backend.tag_list(dataset.name)
 
     return [tag_to_dict(t) for t in release_list]
 
@@ -353,56 +353,50 @@ def _fix_resource_data(resource_dict, revision_id):
 
 
 @toolkit.side_effect_free
-def dataset_release_diff(context, data_dict):
+def dataset_revision_diff(context, data_dict):
     '''Returns a diff between two dataset releases
 
     :param id: the id of the dataset
     :type id: string
-    :param release_id_1: the id of the first release to compare
+    :param revision_ref_1: the id of the first release to compare
     :type id: string
-    :param release_id_2: the id of the second release to compare
+    :param revision_ref_2: the id of the second release to compare
     :type id: string
     :param diff_type: 'unified', 'context', 'html'
     :type diff_type: string
 
     '''
 
-    dataset_id, release_1, release_2 = toolkit.get_or_bust(
-        data_dict, ['id', 'release_1', 'release_2'])
+    dataset_id, revision_ref_1, revision_ref_2 = toolkit.get_or_bust(
+        data_dict, ['id', 'revision_ref_1', 'revision_ref_2'])
     diff_type = data_dict.get('diff_type', 'unified')
 
-    toolkit.check_access(
-        u'dataset_release_diff',
-        context,
-        {'name_or_id': dataset_id}
-    )
+    toolkit.check_access(u'dataset_revision_diff', context,
+                         {'name_or_id': dataset_id})
 
-    dataset_release_1 = _get_dataset_release_dict(
-        context, dataset_id, release_1)
-    dataset_release_2 = _get_dataset_release_dict(
-        context, dataset_id, release_2)
-
-    diff = _generate_diff(dataset_release_1, dataset_release_2, diff_type)
+    revision_1 = _get_dataset_revision_dict(context, dataset_id, revision_ref_1)
+    revision_2 = _get_dataset_revision_dict(context, dataset_id, revision_ref_2)
+    diff = _generate_diff(revision_1, revision_2, diff_type)
 
     return {
         'diff': diff,
-        'dataset_dict_1': dataset_release_1,
-        'dataset_dict_2': dataset_release_2,
+        'dataset_dict_1': revision_1,
+        'dataset_dict_2': revision_2,
     }
 
 
-def _get_dataset_release_dict(context, dataset_id, release):
+def _get_dataset_revision_dict(context, dataset_id, revision_ref):
 
     dataset_dict = toolkit.get_action('package_show')(
         context, {'id': dataset_id})
 
-    if release != 'current':
+    if revision_ref != 'current':
         release_dict = toolkit.get_action('dataset_release_show')(
-            context, {'release': release, 'dataset': dataset_dict['name']})
+            context, {'release': revision_ref, 'dataset': dataset_dict['name']})
 
         if not release_dict['package_id'] == dataset_dict['name']:
             raise toolkit.ValidationError(
-                'You can only compare releases of the same dataset')
+                'You can only compare revisions of the same dataset')
 
         dataset_dict = toolkit.get_action('package_show_release')(
             context, {

@@ -10,11 +10,11 @@
             View changes from
               <select class="form-control select-time" name="revision_id_1">
                 {# Skip the most recent one in the from field #}
-                {% snippet 'package/snippets/revisions_select_options.html', revisions=c.revisions, selected_id=revision_id_1 %}
+                {% snippet 'package/snippets/releases_select_options.html', releases=c.releases, selected_id=revision_ref_1 %}
               </select> to
               <select class="form-control select-time" name="revision_id_2">
 
-                {% snippet 'package/snippets/revisions_select_options.html', revisions=c.revisions, selected_id=revision_id_2, include_current=True %}
+                {% snippet 'package/snippets/releases_select_options.html', releases=c.releases, selected_id=revision_ref_2, include_current=True %}
               </select>
           </div>
           <div class="modal-footer">

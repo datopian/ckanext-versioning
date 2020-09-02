@@ -2,13 +2,13 @@
 {% resource 'versioning/versioning.js' %}
 
 <div id="releases-container"
-    data-module="dataset_version_controls"
+    data-module="dataset_versioning_controls"
     data-module-api-url="{{ h.url_for('api.action', ver=3, logic_function='') }}"
     data-module-package-id="{{ pkg.id }}"
     data-module-package-url="{{ h.url_for(controller='package', action='read', id=pkg.name) }}"
-    data-module-link-resources="{{ h.tojson(h.dataset_version_has_link_resources(pkg)) }}"
-  {% if c.current_version %}
-    data-module-release='{{ h.tojson(c.current_version.name) }}'
+    data-module-link-resources="{{ h.tojson(h.dataset_has_link_resources(pkg)) }}"
+  {% if c.current_release %}
+    data-module-release='{{ h.tojson(c.current_release.name) }}'
   {% endif %}
 >
 
@@ -44,10 +44,10 @@
     </div>
   </div>
 
-  {% if c.current_version %}
+  {% if c.current_release %}
     {% if h.check_access('dataset_release_delete', {'dataset': pkg.id}) %}
-      <button data-version-id="{{ c.current_version.name }}"
-              data-dataset="{{ c.current_version.package_id }}"
+      <button data-version-id="{{ c.current_release.name }}"
+              data-dataset="{{ c.current_release.package_id }}"
               class="delete-version-btn btn btn-danger">
         <i class="fa fa-trash"></i>
         {{ _('Delete Version') }}
@@ -66,8 +66,8 @@
       {% endif %}
       {% if h.check_access('dataset_revert', {'dataset': pkg.id}) %}
       <div class="btn-group">
-        <button data-version-id="{{ c.current_version.name }}"
-                data-dataset="{{ c.current_version.package_id }}"
+        <button data-revision-ref="{{ c.current_release.name }}"
+                data-dataset="{{ c.current_release.package_id }}"
                 class="revert-to-btn btn btn-primary btn-primary-">
           <i class="fa fa-undo"></i>
           {{ _('Revert to this Version') }}
@@ -79,18 +79,18 @@
   {% else %}
     {% if h.check_access('dataset_release_create', {'dataset': pkg.id}) %}
       <!-- Button trigger modal -->
-      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createVersionModal">
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createReleaseModal">
         {{ _('Create Release') }}
       </button>
 
-      {% snippet 'package/snippets/create_version.html' %}
+      {% snippet 'package/snippets/create_release.html' %}
     {% endif %}
 
-    {% if h.check_access('dataset_releases_diff', {'dataset': pkg.id}) %}
-      <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#compareVersionsModal">
+    {% if h.check_access('dataset_revision_diff', {'dataset': pkg.id}) %}
+      <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#compareRevisionsModal">
         {{ _('Compare Releases') }}
       </button>
-      {% snippet 'package/snippets/compare_releases.html', pkg=pkg %}
+      {% snippet 'package/snippets/compare_revisions.html', pkg=pkg %}
     {% endif %}
   {% endif %}
 

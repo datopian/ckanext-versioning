@@ -35,7 +35,7 @@ class TestPackageShow(MetastoreBackendTestBase):
         res = app.get(url, extra_environ=environ)
         assert_in(self.dataset['name'], res.ubody)
 
-    def test_package_show_renders_release(self):
+    def test_package_show_renders_revision(self):
         app = self._get_test_app()
         context = self._get_context(self.user)
 
@@ -65,7 +65,7 @@ class TestPackageShow(MetastoreBackendTestBase):
 
         assert_in(original_notes, res.ubody)
 
-    def test_package_show_renders_release(self):
+    def test_package_show_renders_release_by_name(self):
         app = self._get_test_app()
         context = self._get_context(self.user)
 
@@ -121,5 +121,5 @@ class TestPackageShow(MetastoreBackendTestBase):
         environ = {'REMOTE_USER': self.user_name}
         res = app.get(url, extra_environ=environ)
 
-        assert_in('This is an old release of this dataset', res.ubody)
+        assert_in('This is an old revision of this dataset', res.ubody)
         assert_in('module info alert alert-info', res.ubody)

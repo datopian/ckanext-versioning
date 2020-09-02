@@ -74,7 +74,7 @@ ckan.module('dataset_versioning_controls', function ($) {
         _onRevert: function(evt)
         {
             let dataset = $(evt.target).data('dataset');
-            let revision_ref = $(evt.target).data('release-id');
+            let revision_ref = $(evt.target).data('revision-ref');
             revision_ref = String(revision_ref);
 
             if (confirm(

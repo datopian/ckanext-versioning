@@ -2,11 +2,12 @@ import contextlib
 from ast import literal_eval
 
 from ckan.plugins import toolkit
-from metastore.backend import create_metastore
+from metastore.backend import StorageBackend, create_metastore
 from metastore.types import Author
 
 
 def get_metastore_backend():
+    # type: () -> StorageBackend
     '''Returns a metastore object.
 
     The type and the configuration of the metastore object is defined in the

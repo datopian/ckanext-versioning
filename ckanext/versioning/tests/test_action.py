@@ -257,7 +257,7 @@ class TestVersioningActions(MetastoreBackendTestBase):
             description='Edited Description'
         )
 
-    def test_releases_diff(self):
+    def test_revision_diff(self):
         context = self._get_context(self.org_admin)
         release_1 = test_helpers.call_action(
             'dataset_release_create',
@@ -282,11 +282,11 @@ class TestVersioningActions(MetastoreBackendTestBase):
         )
 
         diff = test_helpers.call_action(
-            'dataset_releases_diff',
+            'dataset_revision_diff',
             context,
             id=self.dataset['id'],
-            release_id_1=release_1['name'],
-            release_id_2=release_2['name'],
+            revision_ref_1=release_1['name'],
+            revision_ref_2=release_2['name'],
         )
 
         assert_in(
@@ -295,7 +295,7 @@ class TestVersioningActions(MetastoreBackendTestBase):
             diff['diff']
         )
 
-    def test_releases_diff_with_current(self):
+    def test_revision_diff_with_current(self):
         context = self._get_context(self.org_admin)
         release_1 = test_helpers.call_action(
             'dataset_release_create',
@@ -313,11 +313,11 @@ class TestVersioningActions(MetastoreBackendTestBase):
         )
 
         diff = test_helpers.call_action(
-            'dataset_releases_diff',
+            'dataset_revision_diff',
             context,
             id=self.dataset['id'],
-            release_id_1=release_1['name'],
-            release_id_2='current',
+            revision_ref_1=release_1['name'],
+            revision_ref_2='current',
         )
 
         assert_in(
