@@ -43,6 +43,27 @@ To install ckanext-versioning:
 
        sudo service apache2 reload
 
+## Configuration settings
+The following CKAN INI configuration settings are required for this plugin
+to operate properly:
+
+### `ckanext.versioning.backend_type`
+
+Should be set to a valid [metastore-lib backend type][1], for example:
+
+    ckanext.versioning.backend_type = filesystem
+
+### `ckanext.versioning.backend_config`
+
+Should be a Python dictionary containing configuration options to pass
+to the metastore-lib backend factory. The specific configuration
+options accepted for each backend [are documented here][1].
+
+For example, for the `filesystem` backend one can use:
+
+    ckanext.versioning.backend_config = {"uri":"./metastore"}
+
+To set the metadata storage path to `./metastore` on the local file system. 
 
 ## API Actions
 
@@ -415,3 +436,4 @@ In addition, the following environment variables are useful when testing:
     CKAN_SQLALCHEMY_URL=postgres://ckan:ckan@my-postgres-db/ckan_test
     CKAN_SOLR_URL=http://my-solr-instance:8983/solr/ckan
 
+[1]: https://metastore-lib.readthedocs.io/en/latest/backends/index.html#id1
