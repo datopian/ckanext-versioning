@@ -31,7 +31,7 @@
       <tbody>
         <tr>
           <th scope="row" class="dataset-label release-list__release-name">
-            <a href="{{ h.url_for_revision(pkg, version={'name': '__VERSION__'}, route_name='versioning.show') }}"></a>
+            <a href="{{ h.url_for_revision(pkg, release={'name': '__REVISION_REF__'}, route_name='versioning.show') }}"></a>
           </th>
           <td class="dataset-details release-list__release-description"></td>
           <td class="dataset-details release-list__release-timestamp"></td>
@@ -46,9 +46,9 @@
 
   {% if c.current_release %}
     {% if h.check_access('dataset_release_delete', {'dataset': pkg.id}) %}
-      <button data-version-id="{{ c.current_release.name }}"
+      <button data-release-name="{{ c.current_release.name }}"
               data-dataset="{{ c.current_release.package_id }}"
-              class="delete-version-btn btn btn-danger">
+              class="delete-release-btn btn btn-danger">
         <i class="fa fa-trash"></i>
         {{ _('Delete Version') }}
       </button>

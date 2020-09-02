@@ -310,7 +310,7 @@ $ curl -H "Authorization: $API_KEY" \
 Note the ``release_metadata``, which is only included with dataset metadata if
 the ``release_id`` parameter was provided.
 
-Fetching the current version of dataset metadata in a specified release:
+Fetching the current revision of dataset metadata in a specified release:
 
 ```
 {

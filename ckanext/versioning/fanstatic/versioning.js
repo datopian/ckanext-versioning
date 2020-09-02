@@ -46,7 +46,7 @@ ckan.module('dataset_versioning_controls', function ($) {
         _onDelete: function (evt)
         {
             let dataset = $(evt.target).data('dataset');
-            let release = $(evt.target).data('release-id');
+            let release = $(evt.target).data('release-name');
             release = String(release);
 
             if (confirm("Are you sure you want to delete the release \"" + release + "\" of this dataset?")) {
@@ -57,7 +57,7 @@ ckan.module('dataset_versioning_controls', function ($) {
         _onCreate: function (evt)
         {
             let releaseName = evt.target.querySelector("input[name=release_name]").value.trim();
-            let description = evt.target.querySelector("textarea[name=details]").value.trim();
+            let description = evt.target.querySelector("textarea[name=description]").value.trim();
             evt.preventDefault();
             return this._create(this._packageId, releaseName, description);
         },
@@ -65,7 +65,7 @@ ckan.module('dataset_versioning_controls', function ($) {
         _onUpdate: function(evt)
         {
             let releaseName = evt.target.querySelector("input[name=release_name]").value.trim();
-            let description = evt.target.querySelector("textarea[name=details]").value.trim();
+            let description = evt.target.querySelector("textarea[name=description]").value.trim();
 
             evt.preventDefault();
             return this._update(this._packageId, this._release, releaseName, description);
