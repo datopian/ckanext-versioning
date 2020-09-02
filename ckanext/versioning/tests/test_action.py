@@ -8,12 +8,12 @@ from ckanext.versioning.logic import helpers
 from ckanext.versioning.tests import MetastoreBackendTestBase
 
 
-class TestVersionsActions(MetastoreBackendTestBase):
+class TestVersioningActions(MetastoreBackendTestBase):
     """Test cases for logic actions
     """
 
     def setup(self):
-        super(TestVersionsActions, self).setup()
+        super(TestVersioningActions, self).setup()
 
         self.org_admin = factories.User()
         self.org_admin_name = self.org_admin['name'].encode('ascii')
@@ -30,12 +30,12 @@ class TestVersionsActions(MetastoreBackendTestBase):
 
         self.dataset = factories.Dataset()
 
-    def test_create_tag(self):
-        """Test basic dataset version creation
+    def test_create_release(self):
+        """Test basic dataset release creation
         """
         context = self._get_context(self.org_admin)
-        version = test_helpers.call_action(
-            'dataset_tag_create',
+        release = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
@@ -43,228 +43,228 @@ class TestVersionsActions(MetastoreBackendTestBase):
 
         revision = helpers.get_dataset_current_revision(self.dataset['name'])
 
-        assert_equals(version['package_id'], self.dataset['name'])
-        assert_equals(version['revision_ref'],
+        assert_equals(release['package_id'], self.dataset['name'])
+        assert_equals(release['revision_ref'],
                       revision)
-        assert_equals(version['description'],
+        assert_equals(release['description'],
                       "The best dataset ever, it **rules!**")
-        assert_equals(version['author'], self.org_admin['name'])
-        assert_equals(version['author_email'], self.org_admin['email'])
+        assert_equals(release['author'], self.org_admin['name'])
+        assert_equals(release['author_email'], self.org_admin['email'])
 
-    def test_create_tag_name_already_exists(self):
-        """Test that creating a version with an existing name for the same
+    def test_create_release_name_already_exists(self):
+        """Test that creating a release with an existing name for the same
         dataset raises an error
         """
         context = self._get_context(self.org_admin)
         test_helpers.call_action(
-            'dataset_tag_create',
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="HEAD",
             description="The best dataset ever, it **rules!**")
 
         assert_raises(toolkit.ValidationError, test_helpers.call_action,
-                      'dataset_tag_create', context,
+                      'dataset_release_create', context,
                       dataset=self.dataset['id'],
                       name="HEAD",
-                      description="This is also a good version")
+                      description="This is also a good release")
 
     def test_create_dataset_not_found(self):
         payload = {'dataset': 'abc123',
-                   'name': "Version 0.1.2"}
+                   'name': "Release 0.1.2"}
 
         assert_raises(toolkit.ObjectNotFound, test_helpers.call_action,
-                      'dataset_tag_create', **payload)
+                      'dataset_release_create', **payload)
 
     def test_create_missing_name(self):
         payload = {'dataset': self.dataset['id'],
                    'description': "The best dataset ever, it **rules!**"}
 
         assert_raises(toolkit.ValidationError, test_helpers.call_action,
-                      'dataset_tag_create', **payload)
+                      'dataset_release_create', **payload)
 
     def test_list(self):
         context = self._get_context(self.org_admin)
         test_helpers.call_action(
-            'dataset_tag_create',
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
-        versions = test_helpers.call_action('dataset_tag_list',
+        releases = test_helpers.call_action('dataset_release_list',
                                             context,
                                             dataset=self.dataset['id'])
-        assert_equals(len(versions), 1)
+        assert_equals(len(releases), 1)
 
-    def test_list_no_versions(self):
+    def test_list_no_releases(self):
         context = self._get_context(self.org_admin)
-        versions = test_helpers.call_action('dataset_tag_list',
+        releases = test_helpers.call_action('dataset_release_list',
                                             context,
                                             dataset=self.dataset['id'])
-        assert_equals(len(versions), 0)
+        assert_equals(len(releases), 0)
 
     def test_list_missing_dataset_id(self):
         payload = {}
         assert_raises(toolkit.ValidationError, test_helpers.call_action,
-                      'dataset_tag_list', **payload)
+                      'dataset_release_list', **payload)
 
     def test_list_not_found(self):
         payload = {'dataset': 'abc123'}
         assert_raises(toolkit.ObjectNotFound, test_helpers.call_action,
-                      'dataset_tag_list', **payload)
+                      'dataset_release_list', **payload)
 
-    def test_create_two_versions_for_same_revision(self):
+    def test_create_two_releases_for_same_revision(self):
         context = self._get_context(self.org_admin)
         test_helpers.call_action(
-            'dataset_tag_create',
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
         test_helpers.call_action(
-            'dataset_tag_create',
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="latest",
-            description="This points to the latest version")
+            description="This points to the latest release")
 
-        versions = test_helpers.call_action('dataset_tag_list',
+        releases = test_helpers.call_action('dataset_release_list',
                                             context,
                                             dataset=self.dataset['id'])
-        assert_equals(len(versions), 2)
+        assert_equals(len(releases), 2)
 
     def test_delete(self):
         context = self._get_context(self.org_admin)
-        version = test_helpers.call_action(
-            'dataset_tag_create',
+        release = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
-        test_helpers.call_action('dataset_tag_delete', context,
+        test_helpers.call_action('dataset_release_delete', context,
                                  dataset=self.dataset['name'],
-                                 tag=version['name'])
+                                 release=release['name'])
 
-        versions = test_helpers.call_action('dataset_tag_list',
+        releases = test_helpers.call_action('dataset_release_list',
                                             context,
                                             dataset=self.dataset['id'])
-        assert_equals(len(versions), 0)
+        assert_equals(len(releases), 0)
 
     def test_delete_not_found(self):
-        payload = {'dataset': 'abc123', 'tag': '1.1'}
+        payload = {'dataset': 'abc123', 'release': '1.1'}
         assert_raises(toolkit.ObjectNotFound, test_helpers.call_action,
-                      'dataset_tag_delete', **payload)
+                      'dataset_release_delete', **payload)
 
     def test_delete_missing_param(self):
         payload = {}
         assert_raises(toolkit.ValidationError, test_helpers.call_action,
-                      'dataset_tag_delete', **payload)
+                      'dataset_release_delete', **payload)
 
     def test_show(self):
         context = self._get_context(self.org_admin)
-        version1 = test_helpers.call_action(
-            'dataset_tag_create',
+        release1 = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
-        version2 = test_helpers.call_action('dataset_tag_show', context,
+        release2 = test_helpers.call_action('dataset_release_show', context,
                                             dataset=self.dataset['name'],
-                                            tag=version1['name'])
+                                            release=release1['name'])
 
-        assert_equals(version2, version1)
+        assert_equals(release2, release1)
 
     def test_show_not_found(self):
-        payload = {'dataset': 'abc123', 'tag': '1.1'}
+        payload = {'dataset': 'abc123', 'release': '1.1'}
         assert_raises(toolkit.ObjectNotFound, test_helpers.call_action,
-                      'dataset_tag_show', **payload)
+                      'dataset_release_show', **payload)
 
     def test_show_missing_param(self):
         payload = {}
         assert_raises(toolkit.ValidationError, test_helpers.call_action,
-                      'dataset_tag_show', **payload)
+                      'dataset_release_show', **payload)
 
-    def test_update_last_version(self):
+    def test_update_last_release(self):
         context = self._get_context(self.org_admin)
-        version = test_helpers.call_action(
-            'dataset_tag_create',
+        release = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
             description="The best dataset ever, it **rules!**")
 
-        updated_version = test_helpers.call_action(
-            'dataset_tag_update',
+        updated_release = test_helpers.call_action(
+            'dataset_release_update',
             context,
             dataset=self.dataset['id'],
-            tag=version['name'],
+            release=release['name'],
             name="0.1.3",
             description="Edited Description"
         )
 
-        assert_equals(version['revision_ref'],
-                      updated_version['revision_ref'])
-        assert_equals(updated_version['description'],
+        assert_equals(release['revision_ref'],
+                      updated_release['revision_ref'])
+        assert_equals(updated_release['description'],
                       "Edited Description")
-        assert_equals(updated_version['name'],
+        assert_equals(updated_release['name'],
                       "0.1.3")
 
-    def test_update_old_version(self):
+    def test_update_old_release(self):
         context = self._get_context(self.org_admin)
-        old_version = test_helpers.call_action(
-            'dataset_tag_create',
+        old_release = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="1",
-            description="This is an old version!")
+            description="This is an old release!")
 
         test_helpers.call_action(
-            'dataset_tag_create',
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="2",
-            description="This is a recent version!")
+            description="This is a recent release!")
 
-        updated_version = test_helpers.call_action(
-            'dataset_tag_update',
+        updated_release = test_helpers.call_action(
+            'dataset_release_update',
             context,
             dataset=self.dataset['id'],
-            tag=old_version['name'],
+            release=old_release['name'],
             name="1.1",
-            description="This is an edited old version!"
+            description="This is an edited old release!"
             )
 
-        assert_equals(old_version['revision_ref'],
-                      updated_version['revision_ref'])
-        assert_equals(updated_version['description'],
-                      "This is an edited old version!")
-        assert_equals(updated_version['name'],
+        assert_equals(old_release['revision_ref'],
+                      updated_release['revision_ref'])
+        assert_equals(updated_release['description'],
+                      "This is an edited old release!")
+        assert_equals(updated_release['name'],
                       "1.1")
 
-    def test_update_not_existing_version_raises_error(self):
+    def test_update_not_existing_release_raises_error(self):
         context = self._get_context(self.org_admin)
 
         assert_raises(
             toolkit.ObjectNotFound, test_helpers.call_action,
-            'dataset_tag_update', context,
+            'dataset_release_update', context,
             dataset=self.dataset['id'],
-            tag='abc-123',
+            release='abc-123',
             name="0.1.2",
             description='Edited Description'
         )
 
-    def test_versions_diff(self):
+    def test_releases_diff(self):
         context = self._get_context(self.org_admin)
-        version_1 = test_helpers.call_action(
-            'dataset_tag_create',
+        release_1 = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name='1',
-            description='Version 1')
+            description='Release 1')
 
         test_helpers.call_action(
             'package_patch',
@@ -273,20 +273,20 @@ class TestVersionsActions(MetastoreBackendTestBase):
             notes='Some changed notes',
         )
 
-        version_2 = test_helpers.call_action(
-            'dataset_tag_create',
+        release_2 = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name='2',
-            description='Version 2'
+            description='Release 2'
         )
 
         diff = test_helpers.call_action(
-            'dataset_versions_diff',
+            'dataset_releases_diff',
             context,
             id=self.dataset['id'],
-            version_id_1=version_1['name'],
-            version_id_2=version_2['name'],
+            release_id_1=release_1['name'],
+            release_id_2=release_2['name'],
         )
 
         assert_in(
@@ -295,14 +295,14 @@ class TestVersionsActions(MetastoreBackendTestBase):
             diff['diff']
         )
 
-    def test_versions_diff_with_current(self):
+    def test_releases_diff_with_current(self):
         context = self._get_context(self.org_admin)
-        version_1 = test_helpers.call_action(
-            'dataset_tag_create',
+        release_1 = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name='1',
-            description='Version 1')
+            description='Release 1')
 
         test_helpers.call_action(
             'package_patch',
@@ -313,11 +313,11 @@ class TestVersionsActions(MetastoreBackendTestBase):
         )
 
         diff = test_helpers.call_action(
-            'dataset_versions_diff',
+            'dataset_releases_diff',
             context,
             id=self.dataset['id'],
-            version_id_1=version_1['name'],
-            version_id_2='current',
+            release_id_1=release_1['name'],
+            release_id_2='current',
         )
 
         assert_in(
@@ -338,13 +338,13 @@ class TestVersionsActions(MetastoreBackendTestBase):
         # )
 
 
-class TestVersionsRevert(MetastoreBackendTestBase):
-    """Test cases for reverting a dataset to a revision / tag
+class TestVersioningRevert(MetastoreBackendTestBase):
+    """Test cases for reverting a dataset to a revision / release
     """
 
     def setup(self):
 
-        super(TestVersionsRevert, self).setup()
+        super(TestVersioningRevert, self).setup()
 
         self.org_admin = factories.User()
         self.org_admin_name = self.org_admin['name'].encode('ascii')
@@ -372,8 +372,8 @@ class TestVersionsRevert(MetastoreBackendTestBase):
             owner_org=self.org['id']
         )
 
-        version = test_helpers.call_action(
-            'dataset_tag_create',
+        release = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=initial_dataset['id'],
             name="1.2")
@@ -397,8 +397,8 @@ class TestVersionsRevert(MetastoreBackendTestBase):
         test_helpers.call_action(
             'dataset_revert',
             context,
-            revision_ref=version['name'],
-            dataset=version['package_id']
+            revision_ref=release['name'],
+            dataset=release['package_id']
             )
 
         reverted = test_helpers.call_action(
@@ -424,18 +424,18 @@ class TestVersionsRevert(MetastoreBackendTestBase):
             owner_org=self.org['id']
         )
 
-        # TODO: For now we use `tag_create` and `tag_list` to get revision IDs
-        # TODO: There is no API to list revisions without tagging
+        # TODO: For now we use `release_create` and `release_list` to get revision IDs
+        # TODO: There is no API to list revisions without creating a release
         # TODO: see https://github.com/datopian/ckanext-versioning/issues/47
 
         test_helpers.call_action(
-            'dataset_tag_create',
+            'dataset_release_create',
             context,
             dataset=initial_dataset['id'],
             name="1.2")
 
-        tags = test_helpers.call_action(
-            'dataset_tag_list',
+        releases = test_helpers.call_action(
+            'dataset_release_list',
             context,
             dataset=initial_dataset['id'])
 
@@ -449,7 +449,7 @@ class TestVersionsRevert(MetastoreBackendTestBase):
         test_helpers.call_action(
             'dataset_revert',
             context,
-            revision_ref=tags[0]['revision_ref'],
+            revision_ref=releases[0]['revision_ref'],
             dataset=initial_dataset['id'])
 
         reverted = test_helpers.call_action(
@@ -470,8 +470,8 @@ class TestVersionsRevert(MetastoreBackendTestBase):
             extras=[{'key': u'original extra',
                      'value': u'original value'}])
 
-        tag = test_helpers.call_action(
-            'dataset_tag_create',
+        release = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=initial_dataset['id'],
             name="1.2")
@@ -489,7 +489,7 @@ class TestVersionsRevert(MetastoreBackendTestBase):
             'dataset_revert',
             context,
             dataset=initial_dataset['id'],
-            revision_ref=tag['name'])
+            revision_ref=release['name'])
 
         reverted_dataset = test_helpers.call_action(
             'package_show',
@@ -512,8 +512,8 @@ class TestVersionsRevert(MetastoreBackendTestBase):
         )
         initial_dataset['resources'].append(first_resource)
 
-        version = test_helpers.call_action(
-            'dataset_tag_create',
+        release = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=initial_dataset['id'],
             name="1.2")
@@ -527,8 +527,8 @@ class TestVersionsRevert(MetastoreBackendTestBase):
         test_helpers.call_action(
             'dataset_revert',
             context,
-            revision_ref=version['name'],
-            dataset=version['package_id']
+            revision_ref=release['name'],
+            dataset=release['package_id']
             )
 
         reverted_dataset = test_helpers.call_action(
