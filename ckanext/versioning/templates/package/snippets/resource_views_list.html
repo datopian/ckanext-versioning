@@ -12,7 +12,7 @@
       </li>
   {% endif %}
 
-  {% set current_filters = request.args.get('filters') %}
+  {% set current_filters = h.versioning_get_query_param('filters') %}
   {% for view in views %}
   	{% set is_selected = true if view_id == view.id else false %}
     {% snippet "package/snippets/resource_views_list_item.html",

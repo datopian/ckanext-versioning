@@ -121,3 +121,11 @@ def tojson(obj):
     be replaced with |tojson and this can be removed.
     '''
     return json.dumps(obj)
+
+
+def get_query_param(key):
+    '''
+    Get a query param from the current request. Needed for cross-ckan version support in
+    templates
+    '''
+    return toolkit.request.params.get(key)

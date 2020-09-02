@@ -48,7 +48,7 @@
           </p>
         </div>
         {% if not to_preview %}
-          {% set current_filters = request.args.get('filters') %}
+          {% set current_filters = h.versioning_get_query_param('filters') %}
           {% if current_filters %}
             {% set src = h.url_for_revision(package, version=c.current_version,
                                            qualified=true, controller='package',
