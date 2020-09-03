@@ -7,7 +7,7 @@ from parameterized import parameterized
 from ckanext.versioning.tests import MetastoreBackendTestBase
 
 
-class TestVersionsAuth(MetastoreBackendTestBase):
+class TestVersioningAuth(MetastoreBackendTestBase):
 
     def _get_context(self, user):
         return {
@@ -17,7 +17,7 @@ class TestVersionsAuth(MetastoreBackendTestBase):
 
     def setup(self):
 
-        super(TestVersionsAuth, self).setup()
+        super(TestVersioningAuth, self).setup()
 
         self.org_admin = factories.User()
         self.org_editor = factories.User()
@@ -53,12 +53,12 @@ class TestVersionsAuth(MetastoreBackendTestBase):
         ('admin_user', 'public_dataset'),
     ])
     def test_create_is_authorized(self, user_type, dataset_type):
-        """Test that authorized users can create versions on a given dataset
+        """Test that authorized users can create releases on a given dataset
         """
         user = getattr(self, user_type)
         dataset = getattr(self, dataset_type)
         context = self._get_context(user)
-        assert helpers.call_auth('dataset_tag_create',
+        assert helpers.call_auth('dataset_release_create',
                                  context=context,
                                  dataset=dataset['id'])
 
@@ -69,7 +69,7 @@ class TestVersionsAuth(MetastoreBackendTestBase):
         ('other_org_admin', 'public_dataset'),
     ])
     def test_create_is_unauthorized(self, user_type, dataset_type):
-        """Test that unauthorized users cannot create versions on a given
+        """Test that unauthorized users cannot create releases on a given
         dataset
         """
         user = getattr(self, user_type)
@@ -77,7 +77,7 @@ class TestVersionsAuth(MetastoreBackendTestBase):
         context = self._get_context(user)
         assert_raises(toolkit.NotAuthorized,
                       helpers.call_auth,
-                      'dataset_tag_create',
+                      'dataset_release_create',
                       context=context,
                       dataset=dataset['id'])
 
@@ -90,12 +90,12 @@ class TestVersionsAuth(MetastoreBackendTestBase):
         ('admin_user', 'public_dataset'),
     ])
     def test_delete_is_authorized(self, user_type, dataset_type):
-        """Test that authorized users can delete versions on a given dataset
+        """Test that authorized users can delete releases on a given dataset
         """
         user = getattr(self, user_type)
         dataset = getattr(self, dataset_type)
         context = self._get_context(user)
-        assert helpers.call_auth('dataset_tag_delete',
+        assert helpers.call_auth('dataset_release_delete',
                                  context=context,
                                  dataset=dataset['id'])
 
@@ -106,7 +106,7 @@ class TestVersionsAuth(MetastoreBackendTestBase):
         ('other_org_admin', 'public_dataset'),
     ])
     def test_delete_is_unauthorized(self, user_type, dataset_type):
-        """Test that unauthorized users cannot delete versions on a given
+        """Test that unauthorized users cannot delete releases on a given
         dataset
         """
         user = getattr(self, user_type)
@@ -114,7 +114,7 @@ class TestVersionsAuth(MetastoreBackendTestBase):
         context = self._get_context(user)
         assert_raises(toolkit.NotAuthorized,
                       helpers.call_auth,
-                      'dataset_tag_delete',
+                      'dataset_release_delete',
                       context=context,
                       dataset=dataset['id'])
 
@@ -130,12 +130,12 @@ class TestVersionsAuth(MetastoreBackendTestBase):
         ('other_org_admin', 'public_dataset'),
     ])
     def test_list_is_authorized(self, user_type, dataset_type):
-        """Test that authorized users can list versions of a given dataset
+        """Test that authorized users can list releases of a given dataset
         """
         user = getattr(self, user_type)
         dataset = getattr(self, dataset_type)
         context = self._get_context(user)
-        assert helpers.call_auth('dataset_tag_list',
+        assert helpers.call_auth('dataset_release_list',
                                  context=context,
                                  dataset=dataset['id'])
 
@@ -143,7 +143,7 @@ class TestVersionsAuth(MetastoreBackendTestBase):
         ('other_org_admin', 'private_dataset'),
     ])
     def test_list_is_unauthorized(self, user_type, dataset_type):
-        """Test that unauthorized users cannot list versions on a given
+        """Test that unauthorized users cannot list releases on a given
         dataset
         """
         user = getattr(self, user_type)
@@ -151,7 +151,7 @@ class TestVersionsAuth(MetastoreBackendTestBase):
         context = self._get_context(user)
         assert_raises(toolkit.NotAuthorized,
                       helpers.call_auth,
-                      'dataset_tag_list',
+                      'dataset_release_list',
                       context=context,
                       dataset=dataset['id'])
 
@@ -167,12 +167,12 @@ class TestVersionsAuth(MetastoreBackendTestBase):
         ('other_org_admin', 'public_dataset'),
     ])
     def test_show_is_authorized(self, user_type, dataset_type):
-        """Test that authorized users can view versions of a given dataset
+        """Test that authorized users can view releases of a given dataset
         """
         user = getattr(self, user_type)
         dataset = getattr(self, dataset_type)
         context = self._get_context(user)
-        assert helpers.call_auth('dataset_tag_show',
+        assert helpers.call_auth('dataset_release_show',
                                  context=context,
                                  dataset=dataset['id'])
 
@@ -180,7 +180,7 @@ class TestVersionsAuth(MetastoreBackendTestBase):
         ('other_org_admin', 'private_dataset'),
     ])
     def test_show_is_unauthorized(self, user_type, dataset_type):
-        """Test that unauthorized users cannot view versions on a given
+        """Test that unauthorized users cannot view releases on a given
         dataset
         """
         user = getattr(self, user_type)
@@ -188,6 +188,6 @@ class TestVersionsAuth(MetastoreBackendTestBase):
         context = self._get_context(user)
         assert_raises(toolkit.NotAuthorized,
                       helpers.call_auth,
-                      'dataset_tag_show',
+                      'dataset_release_show',
                       context=context,
                       dataset=dataset['id'])

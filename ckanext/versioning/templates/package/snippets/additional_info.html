@@ -2,17 +2,17 @@
 
 {% block extras %}
 
-  {% if c.current_version %}
+  {% if c.current_release %}
       <tr>
         <th scope="row" class="dataset-label">{{ _("Version Created") }}</th>
         <td class="dataset-details">
-            {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=c.current_version.created %}
+            {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=c.current_release.created %}
         </td>
       </tr>
       <tr>
         <th scope="row" class="dataset-label">{{ _("Version Updated") }}</th>
         <td class="dataset-details">
-            {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=c.current_version.created %}
+            {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=c.current_release.created %}
         </td>
       </tr>
   {% endif %}

@@ -15,7 +15,7 @@ def show(package_id, revision_ref=None):
 
 
 def resource_show(package_id, resource_id, revision_ref=None):
-    """Show a resource of a package, optionally in a given revision / tag
+    """Show a resource of a package, optionally in a given revision / release
     """
     pkg_dict = _get_package(package_id, revision_ref)
     resource = helpers.find_resource_in_package(pkg_dict, resource_id)
@@ -66,19 +66,19 @@ def changes(id):
     except toolkit.NotAuthorized:
         toolkit.abort(401, 'Not authorized to read dataset')
 
-    versions = toolkit.get_action('dataset_tag_list')(
+    releases = toolkit.get_action('dataset_release_list')(
         context, {'dataset': id})
 
-    version_id_1 = toolkit.request.args.get('version_id_1')
-    version_id_2 = toolkit.request.args.get('version_id_2')
+    revision_ref_1 = toolkit.request.args.get('revision_ref_1')
+    revision_ref_2 = toolkit.request.args.get('revision_ref_2')
 
-    if version_id_1 and version_id_2:
+    if revision_ref_1 and revision_ref_2:
         try:
-            diff = toolkit.get_action('dataset_versions_diff')(
+            diff = toolkit.get_action('dataset_revision_diff')(
                 context, {
                     'id': id,
-                    'version_id_1': version_id_1,
-                    'version_id_2': version_id_2,
+                    'revision_ref_1': revision_ref_1,
+                    'revision_ref_2': revision_ref_2,
                     'diff_type': 'html',
                 }
             )
@@ -87,7 +87,7 @@ def changes(id):
             return toolkit.render(
                 'package/version_changes.html', {
                     'pkg_dict': current_pkg_dict,
-                    'versions': versions
+                    'releases': releases
                 }
             )
     else:
@@ -97,14 +97,14 @@ def changes(id):
         'package/version_changes.html', {
             'diff': diff,
             'pkg_dict': current_pkg_dict,
-            'versions': versions,
-            'version_id_1': version_id_1,
-            'version_id_2': version_id_2,
+            'releases': releases,
+            'revision_ref_1': revision_ref_1,
+            'revision_ref_2': revision_ref_2,
         }
     )
 
 
-versioning.add_url_rule('/dataset/<id>/version/changes', view_func=changes)
+versioning.add_url_rule('/dataset/<id>/release/changes', view_func=changes)
 versioning.add_url_rule('/dataset/<package_id>/show', view_func=show)
 versioning.add_url_rule('/dataset/<package_id>/show/<revision_ref>', view_func=show)
 versioning.add_url_rule('/dataset/<package_id>/resource/<resource_id>', view_func=resource_show)

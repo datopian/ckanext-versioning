@@ -35,12 +35,12 @@ class TestPackageShow(MetastoreBackendTestBase):
         res = app.get(url, extra_environ=environ)
         assert_in(self.dataset['name'], res.ubody)
 
-    def test_package_show_renders_version(self):
+    def test_package_show_renders_revision(self):
         app = self._get_test_app()
         context = self._get_context(self.user)
 
-        tag = test_helpers.call_action(
-            'dataset_tag_create',
+        release = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
@@ -58,19 +58,19 @@ class TestPackageShow(MetastoreBackendTestBase):
         url = toolkit.url_for(
             'versioning.show',
             package_id=self.dataset['id'],
-            revision_ref=tag['revision_ref'])
+            revision_ref=release['revision_ref'])
 
         environ = {'REMOTE_USER': self.user_name}
         res = app.get(url, extra_environ=environ)
 
         assert_in(original_notes, res.ubody)
 
-    def test_package_show_renders_tag(self):
+    def test_package_show_renders_release_by_name(self):
         app = self._get_test_app()
         context = self._get_context(self.user)
 
-        tag = test_helpers.call_action(
-            'dataset_tag_create',
+        release = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
@@ -88,7 +88,7 @@ class TestPackageShow(MetastoreBackendTestBase):
         url = toolkit.url_for(
             'versioning.show',
             package_id=self.dataset['id'],
-            revision_ref=tag['name'])
+            revision_ref=release['name'])
 
         environ = {'REMOTE_USER': self.user_name}
         res = app.get(url, extra_environ=environ)
@@ -99,8 +99,8 @@ class TestPackageShow(MetastoreBackendTestBase):
         app = self._get_test_app()
         context = self._get_context(self.user)
 
-        tag = test_helpers.call_action(
-            'dataset_tag_create',
+        release = test_helpers.call_action(
+            'dataset_release_create',
             context,
             dataset=self.dataset['id'],
             name="0.1.2",
@@ -116,10 +116,10 @@ class TestPackageShow(MetastoreBackendTestBase):
         url = toolkit.url_for(
             'versioning.show',
             package_id=self.dataset['id'],
-            revision_ref=tag['revision_ref'])
+            revision_ref=release['revision_ref'])
 
         environ = {'REMOTE_USER': self.user_name}
         res = app.get(url, extra_environ=environ)
 
-        assert_in('This is an old version of this dataset', res.ubody)
+        assert_in('This is an old revision of this dataset', res.ubody)
         assert_in('module info alert alert-info', res.ubody)

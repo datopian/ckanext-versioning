@@ -2,7 +2,7 @@
 
 "use strict";
 
-ckan.module('dataset_version_controls', function ($) {
+ckan.module('dataset_versioning_controls', function ($) {
 
     return {
 
@@ -17,7 +17,7 @@ ckan.module('dataset_version_controls', function ($) {
             this._packageId = this.options.packageId;
             this._packageUrl = this.options.packageUrl;
             this._linkResources = this.options.linkResources;
-            this._tag = this.options.tag || null;
+            this._release = this.options.release || null;
 
             if(this._linkResources){
                 this.$(".modal-body").append(
@@ -30,9 +30,9 @@ ckan.module('dataset_version_controls', function ($) {
                 );
             };
 
-            this.$('.delete-version-btn').on('click', this._onDelete);
-            this.$('.create-version-form').on('submit', this._onCreate);
-            this.$('.update-version-form').on('submit', this._onUpdate);
+            this.$('.delete-release-btn').on('click', this._onDelete);
+            this.$('.create-release-form').on('submit', this._onCreate);
+            this.$('.update-release-form').on('submit', this._onUpdate);
             this.$('.revert-to-btn').on('click', this._onRevert);
 
             $(document).ready(this._onDocumentReady);
@@ -40,46 +40,46 @@ ckan.module('dataset_version_controls', function ($) {
 
         _onDocumentReady: function ()
         {
-            this._loadTagList(this._packageId);
+            this._loadReleaseList(this._packageId);
         },
 
         _onDelete: function (evt)
         {
             let dataset = $(evt.target).data('dataset');
-            let tag = $(evt.target).data('version-id');
-            tag = String(tag);
+            let release = $(evt.target).data('release-name');
+            release = String(release);
 
-            if (confirm("Are you sure you want to delete the version \"" + tag + "\" of this dataset?")) {
-                return this._delete(tag, dataset);
+            if (confirm("Are you sure you want to delete the release \"" + release + "\" of this dataset?")) {
+                return this._delete(release, dataset);
             }
         },
 
         _onCreate: function (evt)
         {
-            let tagName = evt.target.querySelector("input[name=version_name]").value.trim();
-            let description = evt.target.querySelector("textarea[name=details]").value.trim();
+            let releaseName = evt.target.querySelector("input[name=release_name]").value.trim();
+            let description = evt.target.querySelector("textarea[name=description]").value.trim();
             evt.preventDefault();
-            return this._create(this._packageId, tagName, description);
+            return this._create(this._packageId, releaseName, description);
         },
 
         _onUpdate: function(evt)
         {
-            let tagName = evt.target.querySelector("input[name=version_name]").value.trim();
-            let description = evt.target.querySelector("textarea[name=details]").value.trim();
+            let releaseName = evt.target.querySelector("input[name=release_name]").value.trim();
+            let description = evt.target.querySelector("textarea[name=description]").value.trim();
 
             evt.preventDefault();
-            return this._update(this._packageId, this._tag, tagName, description);
+            return this._update(this._packageId, this._release, releaseName, description);
         },
 
         _onRevert: function(evt)
         {
             let dataset = $(evt.target).data('dataset');
-            let revision_ref = $(evt.target).data('version-id');
+            let revision_ref = $(evt.target).data('revision-ref');
             revision_ref = String(revision_ref);
 
             if (confirm(
-                "Are you sure you want to revert this dataset to the older tag \"" + revision_ref + "\"?\n\n" +
-                "Note that when doing this the current state will be lost. If you want to preserve it, please cancel and create a tag for it first.")) {
+                "Are you sure you want to revert this dataset to the older release \"" + revision_ref + "\"?\n\n" +
+                "Note that when doing this the current state will be lost. If you want to preserve it, please cancel and create a release for it first.")) {
                 return this._revert(revision_ref, dataset);
             }
         },
@@ -96,62 +96,62 @@ ckan.module('dataset_version_controls', function ($) {
             });
         },
 
-        _loadTagList: function (datasetId) {
+        _loadReleaseList: function (datasetId) {
             let params = new URLSearchParams({"dataset": datasetId});
-            let url = this._apiBaseUrl + 'dataset_tag_list?' + params;
+            let url = this._apiBaseUrl + 'dataset_release_list?' + params;
             let that = this;
 
             fetch(url).then(function(response) {
                 if (response.status !== 200) {
-                    console.error("Failed to fetch list of tags, got HTTP " + response.status);
+                    console.error("Failed to fetch list of releases, got HTTP " + response.status);
                 } else {
                     response.json().then(function(payload) {
-                        that._renderTagList(payload.result);
+                        that._renderReleaseList(payload.result);
                     }).catch(function(e) {
-                        console.error("Failed rendering list of tags: " + e);
+                        console.error("Failed rendering list of releases: " + e);
                     });
                 }
             }).catch(function(e) {
-                console.error("Error fetching list of tags: " + e);
+                console.error("Error fetching list of releases: " + e);
             });
         },
 
-        _renderTagList: function (tags) {
-            const loader = $('#tag-list .tags-list__loading');
-            const table = $('#tag-list .tags-list__list');
-            const noTagsMessage = $('#tag-list .tags-list__no-tags');
-            const tagRowTemplate = $('tbody tr', table)[0];
-            const tagHrefTemplate = $('.tags-list__tag-name a', tagRowTemplate).attr('href');
+        _renderReleaseList: function (releases) {
+            const loader = $('#release-list .release-list__loading');
+            const table = $('#release-list .release-list__list');
+            const noReleasesMessage = $('#release-list .release-list__no-releases');
+            const releaseRowTemplate = $('tbody tr', table)[0];
+            const releaseHrefTemplate = $('.release-list__release-name a', releaseRowTemplate).attr('href');
 
             loader.hide();
 
-            if (tags.length < 1) {
-                noTagsMessage.show();
+            if (releases.length < 1) {
+                noReleasesMessage.show();
                 return;
             }
 
             $('tbody', table).empty();
-            for (let i = 0; i < tags.length; i++) {
-                let tag = tags[i];
-                let row = $(tagRowTemplate).clone();
+            for (let i = 0; i < releases.length; i++) {
+                let release = releases[i];
+                let row = $(releaseRowTemplate).clone();
                 table.append(row);
-                $('.tags-list__tag-name a', row).attr('href', tagHrefTemplate.replace('__VERSION__', tag.name));
-                $('.tags-list__tag-name a', row).text(tag.name);
-                $('.tags-list__tag-description', row).text(tag.description);
+                $('.release-list__release-name a', row).attr('href', releaseHrefTemplate.replace('__REVISION_REF__', release.name));
+                $('.release-list__release-name a', row).text(release.name);
+                $('.release-list__release-description', row).text(release.description);
 
                 let datetime = $('<span class="automatic-local-datetime"/>');
-                datetime.text(moment(tag.created).format('LL, LT ([UTC]Z)'));
-                datetime.data('datetime', tag.created);
-                $('.tags-list__tag-timestamp', row).append(datetime);
+                datetime.text(moment(release.created).format('LL, LT ([UTC]Z)'));
+                datetime.data('datetime', release.created);
+                $('.release-list__release-timestamp', row).append(datetime);
             }
 
             table.show();
         },
 
-        _delete: function (tag, dataset) {
-            const action = 'dataset_tag_delete';
+        _delete: function (release, dataset) {
+            const action = 'dataset_release_delete';
             let params = {
-                tag: tag,
+                release: release,
                 dataset: dataset
             };
             let that = this;
@@ -165,11 +165,11 @@ ckan.module('dataset_version_controls', function ($) {
                 }.bind(this));
         },
 
-        _create: function (datasetId, tagName, description) {
-            const action = 'dataset_tag_create';
+        _create: function (datasetId, releaseName, description) {
+            const action = 'dataset_release_create';
             let params = {
                 dataset: datasetId,
-                name: tagName,
+                name: releaseName,
                 description: description
             };
             let that = this;
@@ -183,12 +183,12 @@ ckan.module('dataset_version_controls', function ($) {
                 });
         },
 
-        _update: function (datasetId, tag, tagName, description) {
-            const action = 'dataset_tag_update';
+        _update: function (datasetId, release, releaseName, description) {
+            const action = 'dataset_release_update';
             let params = {
                 dataset: datasetId,
-                tag: tag,
-                name: tagName,
+                release: release,
+                name: releaseName,
                 description: description
             };
             let that = this;
@@ -225,7 +225,7 @@ ckan.module('dataset_version_controls', function ($) {
                     alert(jsonResponse.error.message)
                 }
                 else {
-                    alert(`There was an error ${failed_action} the dataset tag.`);
+                    alert(`There was an error ${failed_action} the dataset release.`);
                     console.error({ params, jsonResponse });
                 }
             });

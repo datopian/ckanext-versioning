@@ -1,0 +1,11 @@
+{% if include_current %}
+  <option value="current" {% if selected_id == 'current' %}selected="selected"{% endif %}>
+  {{ _('[Current live version]') }}
+  </option>
+{% endif %}
+
+{% for release in releases %}
+  <option value="{{ release.name }}" {% if release.name == selected_id %}selected="selected"{% endif %}>
+    {{ release.name }} - {{ h.render_datetime(release.created, with_hours=True)}}
+  </option>
+{% endfor %}
