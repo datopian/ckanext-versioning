@@ -27,17 +27,16 @@
   {% endblock %}
 {% endblock %}
 
-{% block package_revision_info %}
-  {% if c.current_release %}
-    <div class="module info alert alert-info">
-      <p class="module-content">
-        {% set timestamp = h.render_datetime(c.current_release.created, with_hours=True) %}
-        {% set url = h.url_for(controller='package', action='read', id=pkg.id) %}
+{% block package_notes %}
+    {% if c.current_release %}
+      <div class="module info alert alert-info">
+        <p class="module-content">
+          {% set timestamp = h.render_datetime(c.current_release.created, with_hours=True) %}
+          {% set url = h.url_for(controller='package', action='read', id=pkg.id) %}
 
-        {% trans timestamp=timestamp, url=url %}This is an old revision of this dataset, as edited at {{ timestamp }}. It may differ significantly from the <a href="{{ url }}">current version</a>.{% endtrans %}
-      </p>
-    </div>
-  {% else %}
-    {{ super() }}
-  {% endif %}
+          {% trans timestamp=timestamp, url=url %}This is an old revision of this dataset, as edited at {{ timestamp }}. It may differ significantly from the <a href="{{ url }}">current version</a>.{% endtrans %}
+        </p>
+      </div>
+    {% endif %}
+  {{ super() }}
 {% endblock %}
