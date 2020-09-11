@@ -13,13 +13,6 @@
   {% endif %}
 {% endblock %}
 
-{% block package_description %}
-  {{ super() }}
-  {% if c.current_release %}
-  <p>{{ c.current_release.description }}</p>
-  {% endif %}
-{% endblock %}
-
 {% block primary_content_inner %}
   {{ super() }}
   {% block release_list %}
