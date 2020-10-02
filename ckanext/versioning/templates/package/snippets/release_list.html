@@ -1,5 +1,6 @@
 {% set pkg = c.pkg_dict %}
 {% resource 'versioning/versioning.js' %}
+{% resource 'versioning/releases-selector.js' %}
 
 <div id="releases-container"
     data-module="dataset_versioning_controls"
@@ -87,10 +88,15 @@
     {% endif %}
 
     {% if h.check_access('dataset_revision_diff', {'dataset': pkg.id}) %}
-      <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#compareRevisionsModal">
+      <button id="btnCompareRelease"
+              style="display: none"
+              type="button"
+              class="btn btn-secondary"
+              data-toggle="modal"
+              data-target="#compareRevisionsModal">
         {{ _('Compare Releases') }}
       </button>
-      {% snippet 'package/snippets/compare_revisions.html', pkg=pkg %}
+      {% snippet 'package/snippets/compare_revisions_modal.html', pkg=pkg %}
     {% endif %}
   {% endif %}
 
