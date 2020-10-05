@@ -47,18 +47,22 @@ ckan.module('releases-selector', function ($) {
                 .append(
                     $(element)
                         .attr("value", release.revision_ref)
-                        .attr("selected", this._selectedId == release.revision_ref ? 1 : "selected")
                         .text(release.name)
                 );
         });
+        if (this._selectedId) this.el.val(this._selectedId)
 
         if(this._includeCurrent){
-            that.el
+            this.el
                 .append(
                     $(element)
                         .attr("value", "current")
-                        .text(this._('[Current live version]'))
+                        .text(this._('[Current live revision]'))
                 );
+
+            if (!this._selectedId){
+                this.el.val("current")
+            }
         }
     },
 
