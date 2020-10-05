@@ -13,7 +13,6 @@
 ckan.module('releases-selector', function ($) {
   return {
     initialize: function () {
-        console.log('Initialize releases-selector.js')
         $.proxyAll(this, /_on/);
         $.proxyAll(this, /_render/);
         this._includeCurrent = this.options.includeCurrent;
@@ -41,16 +40,14 @@ ckan.module('releases-selector', function ($) {
         const releases = json.result
         let element = "<option></option>"
         let that = this
-
         $.each(releases, function(i, release) {
             that.el
                 .append(
                     $(element)
-                        .attr("value", release.revision_ref)
+                        .attr("value", release.name)
                         .text(release.name)
                 );
         });
-        if (this._selectedId) this.el.val(this._selectedId)
 
         if(this._includeCurrent){
             this.el
@@ -59,9 +56,13 @@ ckan.module('releases-selector', function ($) {
                         .attr("value", "current")
                         .text(this._('[Current live revision]'))
                 );
+        }
 
-            if (!this._selectedId){
+        if (this._selectedId) {
+            if(this._selectedId == 'current'){
                 this.el.val("current")
+            } else {
+                this.el.val(this._selectedId)
             }
         }
     },
