@@ -32,11 +32,11 @@ ckan.module('releases-selector', function ($) {
             'GET',
             'dataset_release_list?',
             'dataset='+datasetId,
-            this._renderReleaseList
+            this._renderReleaseSelector
             )
     },
 
-    _renderReleaseList: function(json){
+    _renderReleaseSelector: function(json){
         const releases = json.result
         let element = "<option></option>"
         let that = this
