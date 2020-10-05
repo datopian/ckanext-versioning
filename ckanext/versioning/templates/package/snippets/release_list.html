@@ -87,7 +87,7 @@
       {% snippet 'package/snippets/create_release.html' %}
     {% endif %}
 
-    {% if h.check_access('dataset_revision_diff', {'dataset': pkg.id}) %}
+    {% if h.check_access('dataset_release_diff', {'dataset': pkg.id}) %}
       <button id="btnCompareRelease"
               style="display: none"
               type="button"

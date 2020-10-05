@@ -282,7 +282,7 @@ class TestVersioningActions(MetastoreBackendTestBase):
         )
 
         diff = test_helpers.call_action(
-            'dataset_revision_diff',
+            'dataset_release_diff',
             context,
             id=self.dataset['id'],
             revision_ref_1=release_1['name'],
@@ -313,7 +313,7 @@ class TestVersioningActions(MetastoreBackendTestBase):
         )
 
         diff = test_helpers.call_action(
-            'dataset_revision_diff',
+            'dataset_release_diff',
             context,
             id=self.dataset['id'],
             revision_ref_1=release_1['name'],
