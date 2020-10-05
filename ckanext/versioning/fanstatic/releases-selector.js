@@ -37,7 +37,7 @@ ckan.module('releases-selector', function ($) {
     },
 
     _renderReleaseSelector: function(json){
-        const releases = json.result
+        let releases = json.result
         let element = "<option></option>"
         let that = this
         $.each(releases, function(i, release) {
