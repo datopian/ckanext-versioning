@@ -3,11 +3,11 @@
 /* releases-selector
  *
  * This JavaScript module generates an ajax call to get the list of releases
- * and adds html as as options to a selector html element
+ * and adds option to a selector html element.
  *
- * includeCurrent - if the selector should include the Current live version option
- * selectedId - selected revision_ref to display in the selector
- * packageId - id of the package to the the releases list
+ * includeCurrent - if the selector should include the "Current live revision" option
+ * selectedId - selected tag name to display in the selector as selected value
+ * datasetId - id of the dataset to get the releases list from
  *
  */
 ckan.module('releases-selector', function ($) {
