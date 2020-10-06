@@ -37,25 +37,34 @@ ckan.module('releases-selector', function ($) {
     },
 
     _renderReleaseSelector: function(json){
-        let releases = json.result
-        let element = "<option></option>"
-        let that = this
+        const loader = $('.release-list__loading');
+        const rangeForm = $('#range_form');
+        const noReleasesMessage = $('.release-list__no-releases');
+        const releases = json.result;
+        const element = "<option></option>";
+        const that = this;
+
+        loader.hide();
+
+        if (releases.length < 1) {
+            noReleasesMessage.show();
+            return;
+        }
+
         $.each(releases, function(i, release) {
-            that.el
-                .append(
-                    $(element)
-                        .attr("value", release.name)
-                        .text(release.name)
-                );
+            that.el.append(
+                $(element)
+                    .attr("value", release.name)
+                    .text(release.name)
+            );
         });
 
         if(this._includeCurrent){
-            this.el
-                .append(
-                    $(element)
-                        .attr("value", "current")
-                        .text(this._('[Current live revision]'))
-                );
+            this.el.append(
+                $(element)
+                    .attr("value", "current")
+                    .text(this._('[Current live revision]'))
+            );
         }
 
         if (this._selectedId) {
@@ -65,6 +74,8 @@ ckan.module('releases-selector', function ($) {
                 this.el.val(this._selectedId)
             }
         }
+
+        rangeForm.show();
     },
 
   };

@@ -16,13 +16,18 @@
         <h1 class="page-heading">{{ _('Changes') }}</h1>
       {% endblock %}
 
-      <form id="range_form" action="" data-module="select-switch" data-module-target="" class="form-inline">
+      <div class="release-list__loading"><i class="fa fa-spinner fa-pulse"></i></div>
+      <form id="range_form" action="" style="display: none;" data-module="select-switch" data-module-target="" class="form-inline">
       View changes from
         <select class="form-control select-time" form="range_form" name="revision_ref_1" data-module="releases-selector" data-module-dataset-id="{{ pkg.id }}" data-module-selected-id="{{ h.tojson(revision_ref_1) }}">
         </select> to
         <select class="form-control select-time" form="range_form" name="revision_ref_2" data-module="releases-selector" data-module-dataset-id="{{ pkg.id }}" data-module-selected-id="{{ h.tojson(revision_ref_2) }}" data-module-include-current="true">
         </select>
       </form>
+
+      <div class="release-list__no-releases" style="display: none" aria-hidden="true">
+        <p>{{ _('This dataset does not have any releases') }}</p>
+      </div>
 
       <hr/>
 
