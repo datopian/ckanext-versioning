@@ -353,7 +353,7 @@ def _fix_resource_data(resource_dict, revision_id):
 
 
 @toolkit.side_effect_free
-def dataset_revision_diff(context, data_dict):
+def dataset_release_diff(context, data_dict):
     '''Returns a diff between two dataset releases
 
     :param id: the id of the dataset
@@ -371,7 +371,7 @@ def dataset_revision_diff(context, data_dict):
         data_dict, ['id', 'revision_ref_1', 'revision_ref_2'])
     diff_type = data_dict.get('diff_type', 'unified')
 
-    toolkit.check_access(u'dataset_revision_diff', context,
+    toolkit.check_access(u'dataset_release_diff', context,
                          {'name_or_id': dataset_id})
 
     revision_1 = _get_dataset_revision_dict(context, dataset_id, revision_ref_1)

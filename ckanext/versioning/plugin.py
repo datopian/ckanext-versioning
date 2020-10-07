@@ -41,7 +41,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
             'dataset_revert': action.dataset_revert,
             'package_show_release': action.package_show_release,
             'resource_show_release': action.resource_show_release,
-            'dataset_revision_diff': action.dataset_revision_diff,
+            'dataset_release_diff': action.dataset_release_diff,
 
             # Chained to core actions
             'dataset_purge': action.dataset_purge,
@@ -60,7 +60,7 @@ class PackageVersioningPlugin(plugins.SingletonPlugin,
             'dataset_release_list': auth.dataset_release_list,
             'dataset_release_show': auth.dataset_release_show,
             'dataset_revert': auth.dataset_revert,
-            'dataset_revision_diff': auth.dataset_revision_diff,
+            'dataset_release_diff': auth.dataset_release_diff,
         }
 
     # ITemplateHelpers

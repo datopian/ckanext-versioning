@@ -119,6 +119,7 @@ ckan.module('dataset_versioning_controls', function ($) {
         _renderReleaseList: function (releases) {
             const loader = $('#release-list .release-list__loading');
             const table = $('#release-list .release-list__list');
+            const btnCompareRelease = $('#btnCompareRelease');
             const noReleasesMessage = $('#release-list .release-list__no-releases');
             const releaseRowTemplate = $('tbody tr', table)[0];
             const releaseHrefTemplate = $('.release-list__release-name a', releaseRowTemplate).attr('href');
@@ -146,6 +147,7 @@ ckan.module('dataset_versioning_controls', function ($) {
             }
 
             table.show();
+            btnCompareRelease.show();
         },
 
         _delete: function (release, dataset) {

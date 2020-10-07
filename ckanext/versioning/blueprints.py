@@ -74,7 +74,7 @@ def changes(id):
 
     if revision_ref_1 and revision_ref_2:
         try:
-            diff = toolkit.get_action('dataset_revision_diff')(
+            diff = toolkit.get_action('dataset_release_diff')(
                 context, {
                     'id': id,
                     'revision_ref_1': revision_ref_1,

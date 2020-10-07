@@ -1,19 +1,16 @@
-<div class="modal fade" id="compareRevisionsModal" tabindex="-1" role="dialog" aria-labelledby="compareRevisionsModalLabel">
+<div class="modal fade" id="compareReleasesModal" tabindex="-1" role="dialog" aria-labelledby="compareReleasesModalLabel">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <form class="compare-revisions-form" action="{{ h.url_for('versioning.changes', id=pkg.name) }}">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title" id="compareRevisionsModalLabel">Compare revisions of dataset {{ pkg.title }}</h4>
+            <h4 class="modal-title" id="compareReleasesModalLabel">Compare revisions of dataset {{ pkg.title }}</h4>
           </div>
           <div class="modal-body">
             View changes from
-              <select class="form-control select-time" name="revision_id_1">
-                {# Skip the most recent one in the from field #}
-                {% snippet 'package/snippets/releases_select_options.html', releases=c.releases, selected_id=revision_ref_1 %}
+              <select class="form-control select-time" name="revision_ref_1" data-module="releases-selector" data-module-dataset-id="{{ pkg.id }}">
               </select> to
-              <select class="form-control select-time" name="revision_id_2">
-                {% snippet 'package/snippets/releases_select_options.html', releases=c.releases, selected_id=revision_ref_2, include_current=True %}
+              <select class="form-control select-time" name="revision_ref_2" data-module="releases-selector" data-module-dataset-id="{{ pkg.id }}" data-module-include-current="true">
               </select>
           </div>
           <div class="modal-footer">
