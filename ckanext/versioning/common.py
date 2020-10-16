@@ -63,4 +63,4 @@ def exception_mapper(from_exc, to_exc):
     try:
         yield
     except from_exc as e:
-        raise to_exc(e)
+        raise to_exc(e.message)

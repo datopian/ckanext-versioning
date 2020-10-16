@@ -66,14 +66,7 @@
       {% snippet 'package/snippets/update_version.html' %}
       {% endif %}
       {% if h.check_access('dataset_revert', {'dataset': pkg.id}) %}
-      <div class="btn-group">
-        <button data-revision-ref="{{ c.current_release.name }}"
-                data-dataset="{{ c.current_release.package_id }}"
-                class="revert-to-btn btn btn-primary btn-primary-">
-          <i class="fa fa-undo"></i>
-          {{ _('Revert to this Version') }}
-        </button>
-      </div>
+         {% link_for _('Revert to this Release'), named_route='versioning.revert', package_id=c.current_release.package_id, revision_ref=c.current_release.name, class_='btn btn-primary revert-to-btn', icon='rotate-left' %}
       {% endif %}
     </div>
 

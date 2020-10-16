@@ -7,6 +7,22 @@ from ckanext.versioning.logic import helpers
 
 versioning = Blueprint('versioning', __name__)
 
+def revert(package_id, revision_ref):
+    context = _get_context()
+    data_dict = {
+        'dataset': package_id,
+        'revision_ref': revision_ref
+    }
+    try:
+        toolkit.get_action('dataset_revert')(context, data_dict)
+        toolkit.h.flash_success(toolkit._('Dataset version reverted successfully.'))
+    except toolkit.NotAuthorized:
+        toolkit.h.flash_error(toolkit._('Not authorized to revert dataset.'))
+    except (toolkit.ObjectNotFound, ValueError) as e:
+        message = 'There was an error when trying to revert the dataset. {}'.format(e.message)
+        toolkit.h.flash_error(toolkit._(message))
+
+    return toolkit.redirect_to(controller='package', action='read', id=package_id)
 
 def show(package_id, revision_ref=None):
     pkg_dict = _get_package(package_id, revision_ref)
@@ -109,6 +125,7 @@ versioning.add_url_rule('/dataset/<package_id>/show', view_func=show)
 versioning.add_url_rule('/dataset/<package_id>/show/<revision_ref>', view_func=show)
 versioning.add_url_rule('/dataset/<package_id>/resource/<resource_id>', view_func=resource_show)
 versioning.add_url_rule('/dataset/<package_id>/show/<revision_ref>/<resource_id>', view_func=resource_show)
+versioning.add_url_rule('/dataset/<package_id>/revert/<revision_ref>', view_func=revert)
 
 
 def _get_package(package_id, revision_ref=None):
