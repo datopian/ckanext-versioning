@@ -221,7 +221,7 @@ ckan.module('dataset_versioning_controls', function ($) {
                             'Success: ',
                             'Dataset reverted successfully. You can now go back to the main dataset page to see the changes.',
                             'success'
-                            )
+                            );
                         body.scrollTop(0);
                     }
                 }.bind(this));
