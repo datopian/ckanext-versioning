@@ -206,6 +206,7 @@ ckan.module('dataset_versioning_controls', function ($) {
 
         _revert: function (revision_ref, dataset) {
             const action = 'dataset_revert';
+            const body = $('html,body');
             let params = {
                 revision_ref: revision_ref,
                 dataset: dataset
@@ -216,7 +217,12 @@ ckan.module('dataset_versioning_controls', function ($) {
                     if (response.status !== 200) {
                         that._show_error_message(response, 'reverting')
                     } else {
-                        location.href = this._packageUrl;
+                        that.sandbox.notify(
+                            'Success: ',
+                            'Dataset reverted successfully. You can now go back to the main dataset page to see the changes.',
+                            'success'
+                            );
+                        body.scrollTop(0);
                     }
                 }.bind(this));
         },
