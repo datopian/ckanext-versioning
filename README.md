@@ -27,7 +27,7 @@ It may work with CKAN 2.9 as well but this is currently not tested.
 
 To install ckanext-versioning:
 
-1. Activate your CKAN virtual environment, for example::
+1. Activate your CKAN virtual environment, for example:
 
        . /usr/lib/ckan/default/bin/activate
 
