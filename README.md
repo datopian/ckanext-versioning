@@ -1,8 +1,8 @@
 <div align="center">
+  
+# DEPRECATED. See https://github.com/datopian/ckanext-versions
 
 # Data Versioning for CKAN
-
-![](https://travis-ci.org/datopian/ckanext-versioning.svg?branch=master)
 
 </div>
 
